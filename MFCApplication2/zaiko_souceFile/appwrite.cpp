@@ -1,7 +1,7 @@
 #include "AppFile.h"
 
 void App_File::writeappfile() {
-	size_t siz = dl+100;
+	size_t siz = dl+2000;
 	wd = (UINT8*)malloc(siz);
 
 	const char* headstr[] = { "<Properties"," xmlns=\""," xmlns:vt=\"" };

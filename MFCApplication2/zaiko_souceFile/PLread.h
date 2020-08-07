@@ -100,6 +100,8 @@ public:
 
 	UINT8* sharestr;
 	UINT32 recordsum;
+	UINT32 styleleng;//スタイルデータ長
+	HeaderRead* hr;//ヘッダーリード
 
 	ArrayNumber numchange;
 	WorkBook_edi* wb;//workbook インスタンス
@@ -121,11 +123,13 @@ public:
 
 	void freewfn();
 
-
 	//Items構造体解放
 	void freeItem(Items* t);
 	//パッキングリスト読み込み
 	char* packingread(char* fn);
+	//セントラルディレクトのコピー
+	CenterDerect* copycd(CenterDerect* c);
+	ENDrecord* copyER(ENDrecord* e);
 	//ワークブックの読み込み
 	int readWorkBook(char* fn);
 	UINT8* strtalloc(UINT8* a, UINT8* b);
@@ -141,7 +145,7 @@ public:
 	//圧縮　書き込み
 	int writecompress(UINT8* d, UINT32 dl, FILE* f, CenterDerect* cd);
 
-	char* readshareAndWrite(char* txt1);
+	char* readshareAndWrite(char* txt1, char* fn);
 
 	void ItemsChangeShare(CsvItemandRid* citem);
 

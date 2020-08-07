@@ -24,10 +24,10 @@ shareRandD::~shareRandD() {
             free(sis[ht]);
         }
     }
-    free(wd);
+    //free(wd);
     //free(writedata);
-    for(int i=0;i<5;i++)
-        free(inputsinum);
+    //for(int i=0;i<5;i++)
+      //  free(inputsinum);
 }
 
 void shareRandD::getSicount() {

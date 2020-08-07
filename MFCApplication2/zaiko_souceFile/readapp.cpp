@@ -162,9 +162,12 @@ void App_File::addvector_lpstr(UINT8* s) {
 		has += s[i];
 	}
 
+	size_t sl = strlen((char*)s) + 1;
 	Tvects[Title_lp_size] = (vt_vector*)malloc(sizeof(vt_vector));
-	Tvects[Title_lp_size]->lpstr = (UINT8*)malloc(sizeof(UINT8) * (strlen((char*)s) + 1));
-	strcpy_s((char*)Tvects[Title_lp_size]->lpstr, (strlen((char*)s) + 1), (char*)s);
+
+	Tvects[Title_lp_size]->lpstr = (UINT8*)malloc(sizeof(UINT8) * sl);
+	strcpy_s((char*)Tvects[Title_lp_size]->lpstr, sl, (char*)s);
+
 	Tvects[Title_lp_size]->hash = has;
 
 	Title_lp_size++;

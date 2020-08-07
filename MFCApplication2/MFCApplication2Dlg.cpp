@@ -227,19 +227,17 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 		delete pl;
 		return;
 	}
-	pl->wb->writeworkbook();//データ書き込み
-	pl->ap->writeappfile();
-
-	pl->writecompress(pl->wb->wd, pl->wb->wl, wf,pl->cddatawb);
-	pl->writecompress(pl->ap->wd, pl->ap->wl, wf,pl->cddataap);
-	//app workbook 書き込み
-	delete pl->wb;
-	delete pl->ap;
 
 	//スタイル決定
 	pl->openstyleseat(hatyu);
 	UINT8* styone=pl->stylesetting(f, fi, bo, sx, cx, nf);
 	UINT8* stytwo = pl->stylesetting(fs, fis, bos, sxs, cxs, nfs);
+	//スタイル書き込み
+	pl->sr->styledatawrite(pl->styleleng);
+	//スタイル圧縮
+	pl->writecompress(pl->sr->wd, pl->sr->wdlen, wf, pl->cddata);
+	delete pl->sr;
+	delete pl->cddata;
 
 	//文字列入力読み込み
 	CString k;
@@ -252,18 +250,21 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 		inMainstr[0] = '\0';
 
 	//シェアー読み込み テキストついか
-	pl->readshareAndWrite(inMainstr);
+	pl->readshareAndWrite(inMainstr,hatyu);
 	//シェアー新規シート用文字追加
 	if(pl->nomatch)
 		pl->ItemsChangeShare(pl->nomatch);
+
 	//シェアーファイル書き込み
 	pl->shar->siwrite();
-	pl->writecompress((UINT8*)pl->shar->wd, pl->shar->wlen, wf,pl->cddata);
+	pl->writecompress((UINT8*)pl->shar->wd, pl->shar->wlen, wf,pl->cddata);//圧縮
+	delete pl->hr;
 
 	//workbookrel 更新
 	pl->workbookrelsadd(pl->nomatch,hatyu);
 	pl->writecompress(pl->wbr->wd, pl->wbr->wl, wf,pl->cddata);
 	delete pl->wbr;
+	delete pl->hr;
 
 	//sheetdata書き込み
 	pl->sheetread(hatyu, pl->matchs, wf, styone, stytwo);
@@ -282,14 +283,28 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 			pl->newSheetWrite((UINT8*)newshdata, (UINT8*)uid, ro, styone, stytwo, wf, hatyu);
 			ro = ro->next;
 		}
-		delete pl->shar;
+		//delete pl->shar;
 	}
+	//app workbook 圧縮
+	pl->wb->writeworkbook();//データ書き込み
+	pl->writecompress(pl->ap->wd, pl->ap->wl, wf, pl->cddataap);
+
+	pl->ap->writeappfile();	
+	pl->writecompress(pl->wb->wd, pl->wb->wl, wf, pl->cddatawb);
+
+	//app workbook 書き込み
+	delete pl->wb;
+	delete pl->ap;
+
+	pl->endrecordwrite(wf);
 
 	cr->freeitem(pl->matchs);
 	cr->freeitem(pl->nomatch);
 	free(inMainstr);
 	delete cr;
 	delete pl;
+
+	fclose(wf);
 
 	return;
 }

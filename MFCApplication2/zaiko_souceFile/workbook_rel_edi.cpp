@@ -279,12 +279,18 @@ UINT8* workb_rels::getridNum() {
 void workb_rels::newrelationadd(UINT8* rid,UINT8* target) {
 	// <Relationship Id="rId117" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet117.xml"/>
 	UINT8 ty[] = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
+
 	size_t ids = strlen((char*)rid)+1;
 	UINT8* nrid = (UINT8*)malloc(sizeof(UINT8) * ids);
+	strcpy_s((char*)nrid, ids, (char*)rid);
+
 	size_t tas = strlen((char*)target) + 1;
 	UINT8* ntar = (UINT8*)malloc(sizeof(UINT8) * tas);
+	strcpy_s((char*)ntar, tas, (char*)target);
+
 	size_t tys = strlen((char*)ty) + 1;
 	UINT8* nty = (UINT8*)malloc(sizeof(UINT8) * tys);
+	strcpy_s((char*)nty, tys, (char*)ty);
 
 	relroot = addrel(relroot, nrid, nty, ntar);
 }

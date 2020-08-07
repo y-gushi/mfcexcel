@@ -38,13 +38,15 @@ PLRead::PLRead()
 	recordsum = 0;
 	wfroot = nullptr;
 	ER = nullptr;
+	styleleng = 0;
 }
 
 PLRead::~PLRead()
 {
 	delete zip;
-	delete sr;
+	//delete sr;
 	freewfn();
+	delete ER;
 	//freeItem(erroritem);
 	//free(inputshop);
 }
@@ -70,6 +72,45 @@ UINT8* ReadWorkBookxml(char* fn) {
 
 	return nullptr;
 }
+//セントラルディレクトリ　コピー
+CenterDerect* PLRead::copycd(CenterDerect* c) {
+	CenterDerect* p = (CenterDerect*)malloc(sizeof(CenterDerect));
+	p->bitflag = c->bitflag;
+	p->version = c->version;
+	p->minversion = c->minversion;
+	p->method = c->method;
+	p->zokusei = c->zokusei;
+	p->gaibuzokusei = c->gaibuzokusei;
+	p->localheader = c->localheader;
+	p->time = 0;
+	p->day = 0;
+	p->size = c->size;
+	p->nonsize = c->nonsize;//内容変更したら　更新必要
+	p->filenameleng = c->filenameleng;
+	p->filename = (char*)malloc(sizeof(char)*(c->filenameleng+1));
+	strcpy_s(p->filename, c->filenameleng + 1, c->filename);
+	p->fieldleng = 0;
+	p->comment = nullptr;
+	p->kakutyo = nullptr;
+	p->fielcomment = 0;
+
+	return p;
+}
+
+ENDrecord* PLRead::copyER(ENDrecord* e) {
+	ENDrecord* p= (ENDrecord*)malloc(sizeof(ENDrecord));
+	p->centralnum = e->centralnum;
+	p->centralsum = e->centralsum;
+	p->comment = nullptr;
+	p->commentleng = 0;
+	p->disccentral = e->disccentral;
+	p->discnum = e->discnum;
+	p->endsig = e->endsig;
+	p->position = e->position;
+	p->size = e->size;
+
+	return p;
+}
 
 //最初　workbook app ファイル読み込み
 int PLRead::readWorkBook(char* fn) {
@@ -81,31 +122,34 @@ int PLRead::readWorkBook(char* fn) {
 		return 0;
 
 	//セントラルディレクトのデータ
-	HeaderRead* hr = new HeaderRead(fn);
+	hr = new HeaderRead(fn);
 	hr->endread(&Zr);//終端コードの読み込み
 	DeflateDecode* dec= new DeflateDecode(&Zr);
 
 	//エンドレコードの保存
-	ER = hr->ER;
-	ER->comment = nullptr;
+	ER = copyER(hr->ER);
 
 	bool flag = false;
 
 	while (hr->filenum < hr->ER->centralsum) {
-		cddatawb = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralnum, nullptr, &Zr);
+		cddata = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralnum, nullptr, &Zr);
 		flag = hr->searchChara(appfile, hr->scd->filename, hr->scd->filenameleng);
 		if (flag)
 			break;
 		hr->freeheader();
 	}
 	if (flag) {//ファイル名が合えばローカルヘッダー読み込み
-		hr->localread(cddatawb->localheader, &Zr);//sharesstringsの読み込み
-		dec->dataread(hr->LH->pos, cddatawb->nonsize);
+		hr->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
+		dec->dataread(hr->LH->pos, cddata->nonsize);
 		hr->freeLH();
 	}
 	ap=new App_File(dec->ReadV, dec->readlen);
 	ap->readappfile();
 	shsize = ap->Title_lp_size;
+
+	//セントラルヘッダーコピー
+	cddataap=copycd(cddata);
+	hr->freeheader();
 
 	delete dec;
 	dec = new DeflateDecode(&Zr);
@@ -113,15 +157,15 @@ int PLRead::readWorkBook(char* fn) {
 	hr->readpos = hr->ER->position;
 	hr->filenum = 0;
 	while (hr->filenum < hr->ER->centralsum) {
-		cddataap = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralnum, nullptr, &Zr);
+		cddata = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralnum, nullptr, &Zr);
 		flag = hr->searchChara(workb, hr->scd->filename, hr->scd->filenameleng);
 		if (flag)
 			break;
 		hr->freeheader();
 	}
 	if (flag) {//ファイル名が合えばローカルヘッダー読み込み
-		hr->localread(cddataap->localheader, &Zr);//sharesstringsの読み込み
-		dec->dataread(hr->LH->pos, cddataap->nonsize);
+		hr->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
+		dec->dataread(hr->LH->pos, cddata->nonsize);
 		hr->freeLH();
 	}
 
@@ -130,10 +174,12 @@ int PLRead::readWorkBook(char* fn) {
 
 	wb->readworkbook();
 
+	//セントラルヘッダーコピー
+	cddatawb = copycd(cddata);
+
 	Zr.close();
 
 	delete dec;
-	delete cddata;
 	delete hr;
 
 	return 1;
@@ -221,9 +267,9 @@ void PLRead::workbookCheck(CsvItemandRid* citem) {
 			UINT8* ri = numchange.InttoChar(shsize + 1, &pl);
 			UINT8* im = numchange.InttoChar(wb->sheetIdMax + 1, &pl);
 			nomatch = addCsvItemRid(nomatch, roo,ri,nullptr);//不一致データ追加
+
 			shsize=wb->addsheets(roo->it, im, ri);//workbook 配列最後尾追加
 			ap->addvector_lpstr(roo->it);//app.xml　配列最後尾追加
-
 		}
 		roo = roo->next;
 	}
@@ -235,33 +281,34 @@ int PLRead::openstyleseat(char* fn) {
 	if (!Zr)
 		return 0;
 
-	HeaderRead* hr2 = new HeaderRead(fn);
-	hr2->endread(&Zr);//終端コードの読み込み
+	hr = new HeaderRead(fn);
+	hr->endread(&Zr);//終端コードの読み込み
 
 	Styledec = new DeflateDecode(&Zr);
 	cddata = nullptr;
 	bool flag = false;
 
-	while (hr2->filenum < hr2->ER->centralsum) {
-		cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, nullptr , &Zr);
-		flag = hr2->searchChara((char*)stylefn, hr2->scd->filename, hr2->scd->filenameleng);
+	while (hr->filenum < hr->ER->centralsum) {
+		cddata = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralnum, nullptr , &Zr);
+		flag = hr->searchChara((char*)stylefn, hr->scd->filename, hr->scd->filenameleng);
 		if (flag)
 			break;
-		hr2->freeheader();
+		hr->freeheader();
 	}
 	if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
-		hr2->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
-		Styledec->dataread(hr2->LH->pos, cddata->nonsize);
-		hr2->freeLH();
+		hr->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
+		Styledec->dataread(hr->LH->pos, cddata->nonsize);
+		hr->freeLH();
 	}
 
 	sr = new checkstyle();
 
 	sr->readstyle(Styledec->ReadV, Styledec->readlen);
 
-	UINT32 styleleng = Styledec->readlen;//style 解凍データ長
+	styleleng = Styledec->readlen;//style 解凍データ長
+
 	delete Styledec;
-	delete hr2;
+	//delete hr;
 	Zr.close();
 
 	return 1;
@@ -314,31 +361,30 @@ int PLRead::writecompress(UINT8* d,UINT32 dl,FILE* f, CenterDerect* cd) {
 	return 1;
 }
 
-char* PLRead::readshareAndWrite(char* txt1)
+char* PLRead::readshareAndWrite(char* txt1,char* fn)
 {
-	std::ifstream Zr(Hfilename, std::ios::in | std::ios::binary);
+	std::ifstream Zr(fn, std::ios::in | std::ios::binary);
 	if (!Zr)
 		return nullptr;
 
-	HeaderRead* hr2 = new HeaderRead(Hfilename);
-	hr2->endread(&Zr);//終端コードの読み込み
+	hr = new HeaderRead(fn);
+	hr->endread(&Zr);//終端コードの読み込み
 
 	DeflateDecode* decShare = new DeflateDecode(&Zr);
 	bool flag = false;
 
-	while (hr2->filenum < hr2->ER->centralsum) {
-		cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, (char*)shares, &Zr);
-		flag = hr2->searchChara((char*)shares, hr2->scd->filename, hr2->scd->filenameleng);
+	while (hr->filenum < hr->ER->centralsum) {
+		cddata = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralnum, (char*)shares, &Zr);
+		flag = hr->searchChara((char*)shares, hr->scd->filename, hr->scd->filenameleng);
 		if (flag)
 			break;
-		hr2->freeheader();
+		hr->freeheader();
 	}
 	if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
-		hr2->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
-		decShare->dataread(hr2->LH->pos, cddata->nonsize);
-		hr2->freeLH();
+		hr->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
+		decShare->dataread(hr->LH->pos, cddata->nonsize);
+		hr->freeLH();
 	}
-	hr2->freeheader();
 
 	shar = new shareRandD(decShare->ReadV, decShare->readlen);//share
 
@@ -365,24 +411,34 @@ void PLRead::ItemsChangeShare(CsvItemandRid* citem) {
 	stocknum = shar->searchSi((char*)citem->it);
 	free(citem->it);
 	citem->it = stocknum;
+
 	//カラー名シェアー入力
 	itemColors *itc = citem->c;
 	itemColors* cl = citem->c;
 	Sizes* sz = nullptr;
+
 	while (cl) {
 		sz = cl->s;
 		while (sz) {
 			//カラー　サイズ　結合
 			size_t csiz = strlen((char*)cl->color);
-			size_t ssiz = strlen((char*)sz->val);
+			size_t ssiz = strlen((char*)sz->size);
+
 			UINT8* mergestr = (UINT8*)malloc(sizeof(UINT8) * (csiz + ssiz + 2));
-			strcpy_s((char*)mergestr, csiz, (char*)cl->color);
-			mergestr[csiz] = ' '; csiz++;//スペース入れ
 			int i = 0;
-			while (sz->val[i] != '\0') {
-				mergestr[csiz + i] = sz->val[i];
+			while (cl->color[i] != '\0') {
+				mergestr[i] = cl->color[i];
 				i++;
 			}
+
+			mergestr[csiz] = ' '; csiz++;//スペース入れ
+
+			i = 0;
+			while (sz->size[i] != '\0') {
+				mergestr[csiz + i] = sz->size[i];
+				i++;
+			}
+
 			mergestr[csiz + i] = '\0';
 
 			//シェアー入力
@@ -411,7 +467,9 @@ char* PLRead::filenamemerge(UINT8* fno, UINT8* plusstr,UINT8* typ) {
 	size_t nfsiz = wfn + idl + tl + 1;
 	char* nf = new char[nfsiz];
 
-	strcpy_s(nf, wfn, (char*)fno);
+	for (size_t i = 0; i < wfn; i++) {
+		nf[i] = fno[i];
+	}
 
 	for (size_t i = 0; i < idl; i++) {
 		nf[wfn] = plusstr[i];
@@ -435,8 +493,8 @@ int PLRead::workbookrelsadd(CsvItemandRid* nom,char* fn) {
 	if (!Zr)
 		return 0;
 
-	CenterDerect* cddata = nullptr;//セントラルディレクトのデータ
-	HeaderRead* hr = new HeaderRead(fn);
+	cddata = nullptr;//セントラルディレクトのデータ
+	hr = new HeaderRead(fn);
 	hr->endread(&Zr);//終端コードの読み込み
 	DeflateDecode* dec = new DeflateDecode(&Zr);
 	bool flag = false;
@@ -459,18 +517,18 @@ int PLRead::workbookrelsadd(CsvItemandRid* nom,char* fn) {
 	delete dec;
 	
 	//filename 作成
-	UINT8 sheet[50] = "worksheets/sheet";
+	UINT8 sheet[] = "worksheets/sheet";
 	UINT8 filetype[] = ".xml";
 	char* newfn = filenamemerge(sheet, nom->rid, filetype);
 	//workbookrel 追加
 	wbr->newrelationadd(nom->rid, (UINT8*)newfn);
+	delete[] newfn;
 	//workbookrel タグ付け
 	wbr->writewbrel();
 
 	Zr.close();
 
-	delete cddata;
-	delete hr;
+	//delete hr;
 
 	return 1;
 }
@@ -481,15 +539,15 @@ char* PLRead::sheetread(char* hfn, CsvItemandRid* it,FILE* inf,UINT8* styo,UINT8
 	if (!Zr)
 		return nullptr;
 	
-	HeaderRead* hr2 = new HeaderRead(hfn);
+	hr = new HeaderRead(hfn);
 	encoding* shenc = new encoding;//sharestring 圧縮
 
-	hr2->endread(&Zr); // 終端コードの読み込み
+	hr->endread(&Zr); // 終端コードの読み込み
 		
 	DeflateDecode* Hdeco;
 	
 	//書き込み不要ファイル
-	const char sharefn[] = "xl/sharedStrings.xml";
+	char sharefn[] = "xl/sharedStrings.xml";
 	char stylefn[] = "xl/styles.xml";
 	char workbrel[] = "xl/_rels/workbook.xml.rels";
 	char workb[] = "xl/workbook.xml";
@@ -498,41 +556,46 @@ char* PLRead::sheetread(char* hfn, CsvItemandRid* it,FILE* inf,UINT8* styo,UINT8
 
 	Ctags* mh;//発注到着　cell データ読み込み
 	searchItemNum* sI = nullptr;//品番検索　＆　書き込み
-	CDdataes* slideCDdata = hr2->saveCD;//ファイル名検索用
+	CDdataes* slideCDdata = hr->saveCD;//ファイル名検索用
 
-	hr2->readpos = hr2->ER->position;//読み込み位置初期化
-	hr2->filenum = 0;//レコード数初期化
+	hr->readpos = hr->ER->position;//読み込み位置初期化
+	hr->filenum = 0;//レコード数初期化
 	int result = 0;	
 	bool flag = false;
 
-	UINT8 sheet[50] = "worksheets/sheet";
+	UINT8 sheet[] = "worksheets/sheet";
 	UINT8 filetype[] = ".xml";
 	char* newfn = nullptr;
 
 	CsvItemandRid* ci = it;
-	while (hr2->filenum < hr2->ER->centralsum)
+	while (hr->filenum < hr->ER->centralsum)
 	{
 		ci = it;
-		cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, nullptr, &Zr);
+		cddata = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralnum, nullptr, &Zr);
+
 		while (ci) {
 			newfn = filenamemerge(sheet, it->rid, filetype);
-			flag = hr2->searchChara(newfn, hr2->scd->filename, hr2->scd->filenameleng);			
+			flag = hr->searchChara(newfn, hr->scd->filename, hr->scd->filenameleng);	
+
 			if (flag) {
 				break;
 			}
+			delete[] newfn;
 			ci = ci->next;
 		}
+
 		if (flag) {//ファイル名一致
-			hr2->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
+			hr->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
 
 			Hdeco = new DeflateDecode(&Zr);//解凍
-			Hdeco->dataread(hr2->LH->pos, cddata->nonsize);//解凍　データ読み込み
+			Hdeco->dataread(hr->LH->pos, cddata->nonsize);//解凍　データ読み込み
 
 			mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, shar);//シートデータ読み込み
 			mh->sheetread();
 
 			sI = new searchItemNum(it, mh);
-			t = sI->searchitemNumber(shar->uniqstr, shar->inputsinum[3], shar->inputsinum[2], shar->inputsinum[1], shar->inputsinum[0], (char*)styo, (char*)styt);
+			t = sI->searchitemNumber(sharestr, shar->inputsinum[3], shar->inputsinum[2], shar->inputsinum[1], shar->inputsinum[0], (char*)styo, (char*)styt);
+
 			if (t)
 			{//品番一致
 				mh->writesheetdata();//シートデータ書き込み
@@ -542,41 +605,39 @@ char* PLRead::sheetread(char* hfn, CsvItemandRid* it,FILE* inf,UINT8* styo,UINT8
 			delete Hdeco;//デコードデータ　削除
 			delete mh;
 			delete sI;
-			hr2->freeLH();
+			hr->freeLH();
 		}
 		else {//データコピー　書き込み
-			int ressha = strcmp(cddata->filename, sharefn);
-			int styresul = strcmp(cddata->filename, stylefn);
-			int wbrres = strcmp(cddata->filename, workbrel);
-			int wbres = strcmp(cddata->filename, workb);
-			int appres = strcmp(cddata->filename, appfile);
+			flag = hr->searchChara((char*)sharefn, hr->scd->filename, hr->scd->filenameleng);
+			if (!flag) {
+				flag = hr->searchChara((char*)stylefn, hr->scd->filename, hr->scd->filenameleng);
+				if (!flag) {
+					flag = hr->searchChara((char*)workbrel, hr->scd->filename, hr->scd->filenameleng);
+					if (!flag) {
+						flag = hr->searchChara((char*)workb, hr->scd->filename, hr->scd->filenameleng);
+						if (!flag) {
+							flag = hr->searchChara((char*)appfile, hr->scd->filename, hr->scd->filenameleng);
+							if (!flag) {
 
-			if (ressha != 0 && styresul != 0 && wbrres != 0 && wbres != 0 && appres != 0 && result != 0) {//styleseet 入れる場合-> && styresul != 0
-				//cddata一旦書き込み
-				UINT32 LHposstock = zip->writeposition;//ローカルヘッダーの位置更新用
-				zip->LoclheadAndDatacopy(cddata->localheader, fw, &Zr);//ローカルヘッダー検索＆書き込み
-				cddata->localheader = LHposstock;//ローカルヘッダー相対位置のみ変更
-				writeCentral(cddata);
+								//cddata一旦書き込み
+								UINT32 LHposstock = zip->writeposition;//ローカルヘッダーの位置更新用
+								zip->LoclheadAndDatacopy(cddata->localheader, inf, &Zr);//ローカルヘッダー検索＆書き込み
+								cddata->localheader = LHposstock;//ローカルヘッダー相対位置のみ変更
+
+								writeCentral(cddata);
+							}
+						}						
+					}
+				}
 			}
 		}
-		hr2->freeheader();
-		free(newfn);
+		flag = false;
+		hr->freeheader();		
 	}
-	
-	delete shar;
-
-	for (size_t i = 0; i < central.size(); i++)
-		fwrite(&central[i], sizeof(char), 1, fw);
-
-	hw.eocdwrite(fw, hr2->ER->discnum, hr2->ER->disccentral, hr2->ER->centralnum, hr2->ER->centralsum, zip->writeposition, central.size());
-
-	central.clear();
-
-	if (fw)
-		fclose(fw);
 
 	if (Zr)
 		Zr.close();
+	delete hr;
 
 	return (char*)stepfour;
 }
@@ -600,17 +661,14 @@ int PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* st
 	char workb[] = "xl/workbook.xml";
 	char appfile[] = "docProps/app.xml";
 
-	HeaderRead* hr2 = new HeaderRead(ifn);
-
 	size_t datlen = strlen((char*)d);
 
 	Ctags* mh = new Ctags(d, datlen, shar);//シートデータ読み込み
 	mh->sheetread();
-	mh->newSheet(d, uuid, citem, styleone, styletwo);
+	mh->newSheet(nullptr, uuid, citem, styleone, styletwo);
 	mh->writesheetdata();
 
-
-	UINT8 sheet[50] = "worksheets/sheet";
+	UINT8 sheet[] = "xl/worksheets/sheet";
 	UINT8 filetype[] = ".xml";
 	char* newfn = filenamemerge(sheet, citem->rid, filetype);
 
@@ -631,11 +689,9 @@ int PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* st
 	cddata->fielcomment = 0;
 
 	writecompress(mh->wd, mh->p, wf, cddata);
-	
-	hr2->freeheader();
 
+	delete mh;
 	delete shar;
-	delete hr2;
 
 	return 1;
 }
@@ -646,14 +702,11 @@ void PLRead::endrecordwrite(FILE* wf) {
 	ER->centralsum = recordsum;//セントラルレコード数
 
 	for (size_t i = 0; i < central.size(); i++)
-		fwrite(&central[i], sizeof(char), 1, fw);
+		fwrite(&central[i], sizeof(char), 1, wf);
 
 	hw.eocdwrite(wf, ER->discnum, ER->disccentral, ER->centralnum, ER->centralsum, zip->writeposition, central.size());
 
 	central.clear();
-
-	if (wf)
-		fclose(wf);
 }
 
 char* PLRead::errorItems() {

@@ -69,7 +69,7 @@ UINT8* Ctags::newSheet(UINT8* rid, UINT8* uuid,CsvItemandRid* citem,UINT8* style
 
 	//draw id ïœçX
 	free(drawing_id);
-	drawing_id = rid;
+	drawing_id = nullptr;
 
 	return drawing_id;
 }

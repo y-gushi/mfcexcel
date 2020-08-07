@@ -1691,7 +1691,7 @@ inline int checkstyle::configstyle(Fonts* fo, Fills* fi,borders* bd,stylexf* csx
 		size_t resiz = (size_t)numFmtsNum + 1;
 		numFMts** rexfs = nullptr;
 
-		rexfs = (numFMts**)realloc(numFmtsRoot, sizeof(numFMts) * resiz);
+		rexfs = (numFMts**)realloc(numFmtsRoot, sizeof(numFMts*) * resiz);
 		numFmtsRoot = rexfs;
 
 		UINT8* numID = numFmtsRoot[numFmtsNum - 1]->Id;//最後のID取得
@@ -1708,10 +1708,10 @@ inline int checkstyle::configstyle(Fonts* fo, Fills* fi,borders* bd,stylexf* csx
 		strcpy_s((char*)rexfs[numFmtsNum]->Code, strlen((char*)nf->Code) + 1, (char*)nf->Code);//numfmts code入力
 
 		numFmtsNum++; nucount++;
-		free(numFmtsCount);
+		//free(numFmtsCount);
 		numFmtsCount = strchange.InttoChar(numFmtsNum, &place);
 
-		free(nf->Code); free(nf->Id); free(nf);
+		//free(nf->Code); free(nf->Id); free(nf);
 	}
 		
 	/*フォントidの検索*/
@@ -1725,7 +1725,7 @@ inline int checkstyle::configstyle(Fonts* fo, Fills* fi,borders* bd,stylexf* csx
 		//フォント設定追加　必要
 		size_t resiz = (size_t)fontNum + 1;
 		Fonts** rexfs = nullptr;
-		rexfs = (Fonts**)realloc(fontRoot, sizeof(Fonts) * resiz);
+		rexfs = (Fonts**)realloc(fontRoot, sizeof(Fonts*) * resiz);
 
 		fontRoot = rexfs;
 
@@ -1773,7 +1773,7 @@ inline int checkstyle::configstyle(Fonts* fo, Fills* fi,borders* bd,stylexf* csx
 		size_t resiz = (size_t)fillNum + 1;
 		Fills** rexfs = nullptr;
 
-		rexfs = (Fills**)realloc(fillroot, sizeof(Fills) * resiz);
+		rexfs = (Fills**)realloc(fillroot, sizeof(Fills*) * resiz);
 		fillroot = rexfs;
 
 		if (!rexfs)
@@ -1845,7 +1845,7 @@ inline int checkstyle::configstyle(Fonts* fo, Fills* fi,borders* bd,stylexf* csx
 		//cellstyle xfs 設定追加　必要
 		size_t resiz = (size_t)cellstyleXfsNum + 1;
 		stylexf** rexfs = nullptr;
-		rexfs = (stylexf**)realloc(cellstyleXfsRoot, sizeof(stylexf) * resiz);//元オブジェクト解放される
+		rexfs = (stylexf**)realloc(cellstyleXfsRoot, sizeof(stylexf*) * resiz);//元オブジェクト解放される
 		cellstyleXfsRoot = rexfs;
 		if (!rexfs) {
 			std::cout << "not keep memory" << std::endl;
@@ -1894,6 +1894,7 @@ inline int checkstyle::configstyle(Fonts* fo, Fills* fi,borders* bd,stylexf* csx
 
 	//style 決定
 	fontnumb = searchcellxfs(cx);
+
 	if (fontnumb != -1)
 	{
 		style = strchange.InttoChar(fontnumb, &place);//一致番号入力　style 決定
@@ -1909,7 +1910,7 @@ inline int checkstyle::configstyle(Fonts* fo, Fills* fi,borders* bd,stylexf* csx
 		size_t resiz = (size_t)cellXfsNum + 1;
 		cellxfs** rexfs = nullptr;
 
-		rexfs = (cellxfs**)realloc(cellXfsRoot, (sizeof(cellxfs) * resiz));
+		rexfs = (cellxfs**)realloc(cellXfsRoot, (sizeof(cellxfs*) * resiz));
 
 		cellXfsRoot = rexfs;
 		if (!rexfs)
@@ -1941,6 +1942,7 @@ inline int checkstyle::configstyle(Fonts* fo, Fills* fi,borders* bd,stylexf* csx
 
 		//std::cout << "style : " << style << std::endl;
 	}
+
 	//UINT32 stylenum = strchange.RowArraytoNum(num, strlen((const char*)num));//style 番号　数字に変換
 	return 1;
 }

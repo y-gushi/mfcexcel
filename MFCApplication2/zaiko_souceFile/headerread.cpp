@@ -64,12 +64,8 @@ CenterDerect* HeaderRead::searchCENTRAL(char* s) {
 //ファイル名検索
 bool HeaderRead::searchChara(char fn[], char* cdfn, UINT16 cdfnlen)
 {
-    int i = 0;
-
-    //文字列の数
-    while (fn[i] != '\0') {
-        i++;
-    }
+    size_t i = strlen(fn); //文字列の数
+    
     UINT32 isize = (UINT32)i + 1;
     char* searchfilename = new char[isize];//検索スライド用
 
@@ -81,22 +77,22 @@ bool HeaderRead::searchChara(char fn[], char* cdfn, UINT16 cdfnlen)
                 return false;
             }
             else {
+                /*
                 if (slidepos == 0) {//
-                    for (int j = 0; j < i; j++) {//最初に文字列にfilenameをi分入れる
+                    for (size_t j = 0; j < i; j++) {//最初に文字列にfilenameをi分入れる
                         searchfilename[j] = cdfn[slidepos];
                         slidepos++;
                     }
                     searchfilename[i] = '\0';//文字列終端を追加
                 }
-                else {
-                    //配列を一文字づつずらす
-                    for (int j = 0; j < i - 1; j++) {
-                        searchfilename[j] = searchfilename[j + 1];
-                    }
-                    searchfilename[i - 1] = cdfn[slidepos];//最後に付け加える
-                    searchfilename[i] = '\0';//文字列終端を追加
-                    slidepos++;//位置移動
+                */
+                //配列を一文字づつずらす
+                for (int j = 0; j < i - 1; j++) {
+                    searchfilename[j] = searchfilename[j + 1];
                 }
+                searchfilename[i - 1] = cdfn[slidepos];//最後に付け加える
+                searchfilename[i] = '\0';//文字列終端を追加
+                slidepos++;//位置移動
                 if (strcmp(searchfilename, fn) == 0)
                 {
                     //std::cout << "local filename match" << std::endl;

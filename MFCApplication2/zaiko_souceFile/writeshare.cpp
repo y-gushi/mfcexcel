@@ -6,7 +6,7 @@ void shareRandD::siwrite() {
 	char uniq[] = " uniqueCount=\"";
 	char endshar[] = "</sst>";
 
-	UINT32 datalen = UINT32(sdlen) + 4000;//データ長
+	UINT32 datalen = UINT32(sdlen) + 8000;//データ長
 
 	wd = (char*)malloc(datalen);
 

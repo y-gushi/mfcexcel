@@ -770,12 +770,21 @@ void WorkBook_edi::getsheetsV() {
 UINT32 WorkBook_edi::addsheets(UINT8* n, UINT8* s, UINT8* r) {
 
 	wb_sheets** nsh = (wb_sheets**)realloc(wbshroot, sizeof(wb_sheets*) * (shsize + 1));
+	size_t nl = strlen((char*)n) + 1;
+	size_t sl = strlen((char*)s) + 1;
+	size_t rl = strlen((char*)r) + 1;
 
 	nsh[shsize] = (wb_sheets*)malloc(sizeof(wb_sheets));
-	nsh[shsize]->name = (UINT8*)malloc(sizeof(UINT8) * (strlen((char*)n) + 1));
-	strcpy_s((char*)nsh[shsize]->name, strlen((char*)n) + 1, (char*)n);
-	nsh[shsize]->sheetId = s;
-	nsh[shsize]->id = r;
+
+	nsh[shsize]->name = (UINT8*)malloc(sizeof(UINT8) * nl);
+	strcpy_s((char*)nsh[shsize]->name, nl, (char*)n);
+
+	nsh[shsize]->sheetId = (UINT8*)malloc(sizeof(UINT8) * sl);
+	strcpy_s((char*)nsh[shsize]->sheetId, sl, (char*)s);
+
+	nsh[shsize]->id = (UINT8*)malloc(sizeof(UINT8) * rl);
+	strcpy_s((char*)nsh[shsize]->id, rl, (char*)r);
+
 	shsize++;
 
 	wbshroot = nsh;

@@ -21,7 +21,7 @@ void WorkBook_edi::writeworkbook() {
 	char clo = '>';
 	char sla[] = "/>";
 
-	size_t siz = dl + 1000;
+	size_t siz = dl + 2000;
 	wd = (UINT8*)malloc(siz);
 
 	oneStrwrite((char*)titlestr);
