@@ -12,6 +12,7 @@
 #include "workbookEdit.h"
 #include "AppFile.h"
 #include "workbook_rel_edi.h"
+#include "draw_edit.h"
 
 #define BUFSIZE 255
 
@@ -113,6 +114,7 @@ public:
 	CenterDerect* cddataap;//appfile central
 	encoding* enc;//エンコード　インスタンス
 	workb_rels* wbr;
+	DrawEdit* dr;//draw .xml 読み込み
 
 	CsvItemandRid* matchs;//シート一致
 	CsvItemandRid* nomatch;//シートなし
@@ -135,6 +137,10 @@ public:
 	UINT8* strtalloc(UINT8* a, UINT8* b);
 	Sizes* addSize(Sizes* si, Sizes* msi);
 	itemColors* addColors(itemColors* col, itemColors* mcol);
+	
+	//メモリ　確保なし
+	CsvItemandRid* addmatchitem(CsvItemandRid* c, CsvItemandRid* m, UINT8* rid, UINT8* nrid);
+
 	CsvItemandRid* addCsvItemRid(CsvItemandRid* c, CsvItemandRid* m, UINT8* rid, UINT8* nrid);
 
 	void workbookCheck(CsvItemandRid* citem);
@@ -159,7 +165,9 @@ public:
 	char* sheetread(char* hfn, CsvItemandRid* it, FILE* inf, UINT8* styo, UINT8* styt);
 
 	// new sheet make
-	int newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* styleone, UINT8* styletwo, FILE* wf, char* ifn);
+	UINT8* newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* styleone, UINT8* styletwo, FILE* wf, char* ifn, UINT8* reld);
+
+	void makedrawxml(UINT8* drawdata, UINT8* rid, UINT8* targetfile, FILE* f, UINT8* dreldata);
 
 	void endrecordwrite(FILE* wf);
 

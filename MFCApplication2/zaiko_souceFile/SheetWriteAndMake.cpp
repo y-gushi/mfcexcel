@@ -3,19 +3,12 @@
 //セルデータの追加　row span更新
 void Ctags::addcelldata(UINT32 row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F* f, UINT8* si) {
     Row* ro = nullptr;
-    bool replace = false;
     int rp = 0;//桁数
 
     rp = 0;//桁数
 
     rp = strlen((char*)col);
     UINT32 cn = NA.ColumnArraytoNumber(col, rp);//spanよう　列文字数字
-
-    if (cn > maxcol) {//diment 最大値更新
-        maxcol = cn;
-        dm->eC = NA.ColumnNumtoArray(maxcol, &rp);
-        replace = true;
-    }
 
     ro = searchRow(rows, row);//row位置検索
     if (!ro) {
@@ -57,9 +50,22 @@ void Ctags::addcelldata(UINT32 row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         ro->cells = addCtable(ro->cells, t, s, si, cn, v, f);        
     }
 
+    int pl = 0;
+    //diment 列　最大値更新
+    if (cn > maxcol) {
+        maxcol = cn;
+        free(dm->eC);
+        dm->eC = NA.ColumnNumtoArray(maxcol, &rp);
+    }
+    //row diment 最大値更新
+    UINT32 rowmax= NA.RowArraytoNum(dm->eR, strlen((char*)dm->eR));
+    if (ro->r > rowmax) {
+        free(dm->eR);
+        dm->eR= NA.InttoChar(ro->r, &pl);
+    }
+
     //ro->cells = addCtable(ro->cells, t, s, si, cn, v, f);//セル情報検索
     cn = NA.ColumnCharnumtoNumber(cn);//列番号連番へ　入れた列
-
     
     rp = 0;//桁数
     while (ro->spanE[rp] != '\0')

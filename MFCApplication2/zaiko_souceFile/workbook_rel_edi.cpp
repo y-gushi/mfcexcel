@@ -78,7 +78,7 @@ void workb_rels::writewbrel() {
 	char clo = '>';
 	char sla[] = "/>";
 
-	size_t siz = dl + 1000;
+	size_t siz = dl + 2000;
 	wd= (UINT8*)malloc(sizeof(UINT8)*siz);
 
 	oneStrwrite((char*)tstr);
@@ -124,6 +124,14 @@ relations* workb_rels::addrel(relations* r, UINT8* id, UINT8* ty, UINT8* ta) {
 		r->type = ty;
 		r->target = ta;
 		r->next = nullptr;
+	}
+	else if (strcmp((char*)ta, (char*)r->target) == 0) {
+		free(r->Id);
+		free(r->type);
+		free(r->target);
+		r->Id = id;
+		r->type = ty;
+		r->target = ta;
 	}
 	else {
 		r->next = addrel(r->next, id, ty, ta);
@@ -276,11 +284,10 @@ UINT8* workb_rels::getridNum() {
 	return Sv;
 }
 
-void workb_rels::newrelationadd(UINT8* rid,UINT8* target) {
-	// <Relationship Id="rId117" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet117.xml"/>
-	UINT8 ty[] = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
-
+void workb_rels::newrelationadd(UINT8* ty,UINT8* rid,UINT8* target) {
+	
 	size_t ids = strlen((char*)rid)+1;
+
 	UINT8* nrid = (UINT8*)malloc(sizeof(UINT8) * ids);
 	strcpy_s((char*)nrid, ids, (char*)rid);
 

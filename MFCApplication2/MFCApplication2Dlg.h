@@ -39,6 +39,10 @@ public:
 	//リソースの読み込み
 	char* GetResouceOne();
 	char* GetResouceTwo();
+
+	char* GetResouceThree();
+
+	char* GetResouceFour();
 	
 	afx_msg void OnBnClickedButton2();
 	// 試し入力
@@ -67,7 +71,7 @@ public:
 	//cstring->char
 	char* CstringToChar(CString cs);
 	char* SJIStoUTF8(char* szSJIS, char* bufUTF8, int size);
-	char* GuidToString(GUID guid);
+	std::string GuidToString(GUID guid);
 	// 日付文字列入力
 	CEdit m_dayinstr;
 };

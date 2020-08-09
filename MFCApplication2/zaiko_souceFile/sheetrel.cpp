@@ -34,6 +34,10 @@ void Ctags::readsheetrels(UINT8* data, UINT32 datalen) {
 	} while (res != 0);
 }
 
+void newsheetrel(UINT8* drawrid, UINT8* fin) {
+
+}
+
 void Ctags::read_Relations() {
 	const char* relstrs = "xmlns=\"";//7
 	const char* relationstr = "<Relationship";//13

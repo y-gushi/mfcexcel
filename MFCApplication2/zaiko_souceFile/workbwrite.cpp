@@ -12,7 +12,7 @@ void WorkBook_edi::writeworkbook() {
 	const char* bview[] = { "<bookViews>","<workbookView"," xWindow=\""," yWindow=\""," windowWidth=\""," windowHeight=\""," tabRatio=\"",
 	" firstSheet=\""," activeTab=\""," xr2:uid=\"","</bookViews>" };
 	const char* sheetstr[] = { "<sheets>","<sheet"," name=\""," sheetId=\""," r:id=\"rid","</sheets>" };
-	const char* exrefe[] = { "<externalReferences>","<externalReference"," r:id=\"","</externalReferences>" };
+	const char* exrefe[] = { "<externalReferences>","<externalReference"," r:id=\"rId","</externalReferences>" };
 	const char* defname[] = { "<definedNames>","<definedName" ," name=\""," localSheetId=\""," hidden=\"","</definedName>","</definedNames>" };
 	const char* calcstr[] = { "<calcPr"," calcId=\"" };
 	const char* exlststr[] = { "<extLst>","<ext"," xmlns:xcalcf=\""," uri=\"","<xcalcf:calcFeatures>","<xcalcf:feature"," name=\"","</xcalcf:calcFeatures>",

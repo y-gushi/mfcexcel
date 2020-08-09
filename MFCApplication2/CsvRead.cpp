@@ -106,6 +106,17 @@ void CsvRead::freeitem(CsvItemandRid* cv) {
     }
 }
 
+void CsvRead::freematchitem(CsvItemandRid* cv) {
+    CsvItemandRid* p;
+    while (cv) {
+        p = cv->next;
+        free(cv->rid);
+        free(cv->Newrid);
+        free(cv);
+        cv = p;
+    }
+}
+
 int CsvRead::readCsv(char* fn) {
     std::ifstream fin(fn, std::ios::in | std::ios::binary);
     if (!fin)

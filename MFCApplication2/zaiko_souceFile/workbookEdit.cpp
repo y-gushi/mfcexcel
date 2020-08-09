@@ -850,7 +850,7 @@ void WorkBook_edi::getereference() {
 
 		res = strncmp((char*)one, exrefestr, 6);
 		if (res == 0)
-			id = getvalue();
+			id = getridNum();//r:idœ‚­
 	}
 
 	exRroot = addextReference(exRroot, id);

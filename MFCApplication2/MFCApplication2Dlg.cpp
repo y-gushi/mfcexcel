@@ -210,6 +210,7 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 	char* wrfn = pl->writename(hatyu, strlen(hatyu));
 
 	char* inMainstr = (char*)calloc(50, sizeof(char));
+	char* NewUid = (char*)calloc(100, sizeof(char));
 
 	//csv読み込み
 	char* filn = CstringToChar(m_edit_in1);
@@ -271,25 +272,37 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 	
 	//new sheet
 	CsvItemandRid* ro = nullptr;
+	UINT8* drawid = nullptr;
+	
+	char* newshdata = GetResouceOne();//リソースデータ
+	char* newshreldata = GetResouceTwo();//リソースデータ
+	char* drawdata = GetResouceThree();//リソースデータ
+	char* drawreldata = GetResouceFour();//リソースデータ
 	ro = pl->nomatch;
 	if (ro) {
 		while (ro) {
 			//uuid 作成
 			GUID guid;
 			CoCreateGuid(&guid);
-			char* uid = GuidToString(guid);
-			//新規シート作成
-			char* newshdata = GetResouceOne();//リソースデータ
-			pl->newSheetWrite((UINT8*)newshdata, (UINT8*)uid, ro, styone, stytwo, wf, hatyu);
+			std::string uuid = GuidToString(guid);
+			const char* uid = uuid.c_str();
+			//NewUid = SJIStoUTF8(uid, NewUid, 100);//utf8変換
+
+			//新規シート作成			
+			drawid=pl->newSheetWrite((UINT8*)newshdata, (UINT8*)uid, ro, styone, stytwo, wf, hatyu, (UINT8*)newshreldata);
+			
+			//draw xml作成
+			pl->makedrawxml((UINT8*)drawdata, ro->rid, nullptr, wf, (UINT8*)drawreldata);
+
 			ro = ro->next;
 		}
 		//delete pl->shar;
 	}
 	//app workbook 圧縮
-	pl->wb->writeworkbook();//データ書き込み
+	pl->ap->writeappfile();//データ書き込み
 	pl->writecompress(pl->ap->wd, pl->ap->wl, wf, pl->cddataap);
 
-	pl->ap->writeappfile();	
+	pl->wb->writeworkbook(); 
 	pl->writecompress(pl->wb->wd, pl->wb->wl, wf, pl->cddatawb);
 
 	//app workbook 書き込み
@@ -298,8 +311,8 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 
 	pl->endrecordwrite(wf);
 
-	cr->freeitem(pl->matchs);
-	cr->freeitem(pl->nomatch);
+	cr->freematchitem(pl->matchs);
+	cr->freematchitem(pl->nomatch);
 	free(inMainstr);
 	delete cr;
 	delete pl;
@@ -324,14 +337,46 @@ char* CMFCApplication2Dlg::GetResouceOne() {
 
 	return cs;
 }
-
+//sheetrel テンプレート　読み込み
 char* CMFCApplication2Dlg::GetResouceTwo() {
 	HRSRC hrc;
 	HGLOBAL hgb;
 	LPVOID p;
 	char* cs;
 
+	hrc = FindResourceA(NULL, MAKEINTRESOURCEA(IDR_TEXT3), "TEXT");
+
+	hgb = LoadResource(NULL, hrc);
+	p = LockResource(hgb);
+
+	cs = (char*)p;
+
+	return cs;
+}
+//draw xml 読み込み
+char* CMFCApplication2Dlg::GetResouceThree() {
+	HRSRC hrc;
+	HGLOBAL hgb;
+	LPVOID p;
+	char* cs;
+
 	hrc = FindResourceA(NULL, MAKEINTRESOURCEA(IDR_TEXT2), "TEXT");
+
+	hgb = LoadResource(NULL, hrc);
+	p = LockResource(hgb);
+
+	cs = (char*)p;
+
+	return cs;
+}
+//drawrel xml 読み込み
+char* CMFCApplication2Dlg::GetResouceFour() {
+	HRSRC hrc;
+	HGLOBAL hgb;
+	LPVOID p;
+	char* cs;
+
+	hrc = FindResourceA(NULL, MAKEINTRESOURCEA(IDR_TEXT4), "TEXT");
 
 	hgb = LoadResource(NULL, hrc);
 	p = LockResource(hgb);
@@ -468,16 +513,16 @@ char* CMFCApplication2Dlg::SJIStoUTF8(char* szSJIS, char* bufUTF8, int size) {
 	return bufUTF8;
 }
 //uuid生成
-char* CMFCApplication2Dlg::GuidToString(GUID guid)
+std::string CMFCApplication2Dlg::GuidToString(GUID guid)
 {
 	// https://gist.github.com/vincenthsu/8fab51834e3a04074a57
 
-	char *guid_cstr=(char*)malloc(sizeof(char)*37);
+	char guid_cstr[37];
 	snprintf(guid_cstr, sizeof(guid_cstr),
 		"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
 		guid.Data1, guid.Data2, guid.Data3,
 		guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
 		guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
 
-	return guid_cstr;
+	return std::string(guid_cstr);
 }

@@ -39,6 +39,7 @@ PLRead::PLRead()
 	wfroot = nullptr;
 	ER = nullptr;
 	styleleng = 0;
+	dr = nullptr;
 }
 
 PLRead::~PLRead()
@@ -93,6 +94,8 @@ CenterDerect* PLRead::copycd(CenterDerect* c) {
 	p->comment = nullptr;
 	p->kakutyo = nullptr;
 	p->fielcomment = 0;
+	p->discnum = c->discnum;
+	p->crc = 0;
 
 	return p;
 }
@@ -226,6 +229,22 @@ itemColors* PLRead::addColors(itemColors* col, itemColors* mcol) {
 	return col;
 }
 
+CsvItemandRid* PLRead::addmatchitem(CsvItemandRid* c, CsvItemandRid* m, UINT8* rid, UINT8* nrid) {
+	if (!c) {
+		c = (CsvItemandRid*)malloc(sizeof(CsvItemandRid));
+		c->it = m->it;
+		c->c = nullptr;
+		c->c = m->c;
+		c->rid = rid;
+		c->Newrid = nrid;
+		c->next = nullptr;
+	}
+	else {
+		c->next = addmatchitem(c->next, m, rid, nrid);
+	}
+	return c;
+}
+
 CsvItemandRid* PLRead::addCsvItemRid(CsvItemandRid* c, CsvItemandRid* m,UINT8* rid,UINT8* nrid) {
 	if (!c) {
 		c = (CsvItemandRid*)malloc(sizeof(CsvItemandRid));
@@ -256,7 +275,7 @@ void PLRead::workbookCheck(CsvItemandRid* citem) {
 		while (i < shsize) {
 			res=strncmp((char*)roo->it, (char*)wb->wbshroot[i]->name,strlen((char*)roo->it));//(2)を避けるため長さ指定
 			if (res == 0) {
-				matchs= addCsvItemRid(matchs, roo,wb->wbshroot[i]->id,nullptr);
+				matchs= addmatchitem(matchs, roo,wb->wbshroot[i]->id,nullptr);
 				break;
 			}
 			i++;
@@ -266,13 +285,30 @@ void PLRead::workbookCheck(CsvItemandRid* citem) {
 			int pl = 0;
 			UINT8* ri = numchange.InttoChar(shsize + 1, &pl);
 			UINT8* im = numchange.InttoChar(wb->sheetIdMax + 1, &pl);
-			nomatch = addCsvItemRid(nomatch, roo,ri,nullptr);//不一致データ追加
+			nomatch = addmatchitem(nomatch, roo,ri,nullptr);//不一致データ追加
 
 			shsize=wb->addsheets(roo->it, im, ri);//workbook 配列最後尾追加
 			ap->addvector_lpstr(roo->it);//app.xml　配列最後尾追加
 		}
 		roo = roo->next;
 	}
+
+	//external rid 変更
+	extReferences* er = wb->exRroot;
+	UINT32 ernum = shsize+1;
+	int pl = 0;
+	if (er) {
+		while (er) {
+			UINT8* exrid = numchange.InttoChar(ernum, &pl);
+			//rid更新
+			free(er->id);
+			er->id = exrid;
+			ernum++;
+
+			er = er->next;
+		}
+	}
+
 	//ソート	
 }
 
@@ -465,7 +501,7 @@ char* PLRead::filenamemerge(UINT8* fno, UINT8* plusstr,UINT8* typ) {
 	size_t tl = strlen((char*)typ);
 
 	size_t nfsiz = wfn + idl + tl + 1;
-	char* nf = new char[nfsiz];
+	char* nf = (char*)malloc(sizeof(char)*nfsiz);
 
 	for (size_t i = 0; i < wfn; i++) {
 		nf[i] = fno[i];
@@ -488,6 +524,11 @@ char* PLRead::filenamemerge(UINT8* fno, UINT8* plusstr,UINT8* typ) {
 int PLRead::workbookrelsadd(CsvItemandRid* nom,char* fn) {
 	//workbookrel 更新
 	char workbrel[] = "xl/_rels/workbook.xml.rels";
+	// <Relationship Id="rId117" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet117.xml"/>
+	// <Relationship Id="rid425" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink" Target="externalLinks/externalLink2.xml"/>
+
+	UINT8 ty[] = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
+	UINT8 estr[] = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink";
 
 	std::ifstream Zr(fn, std::ios::in | std::ios::binary);
 	if (!Zr)
@@ -519,10 +560,33 @@ int PLRead::workbookrelsadd(CsvItemandRid* nom,char* fn) {
 	//filename 作成
 	UINT8 sheet[] = "worksheets/sheet";
 	UINT8 filetype[] = ".xml";
-	char* newfn = filenamemerge(sheet, nom->rid, filetype);
+	CsvItemandRid* cir = nom;
+
 	//workbookrel 追加
-	wbr->newrelationadd(nom->rid, (UINT8*)newfn);
-	delete[] newfn;
+	while (cir) {
+		char* newfn = filenamemerge(sheet, nom->rid, filetype);
+		wbr->newrelationadd(ty,nom->rid, (UINT8*)newfn);
+		free(newfn);
+		cir = cir->next;
+	}	
+
+	//externalLink 更新
+	UINT8 extlink[] = "externalLinks/externalLink";
+	UINT32 exn = 1;
+	int pl = 0;
+
+	extReferences* er = wb->exRroot;
+	//workbookrel 追加
+	while (er) {
+		UINT8* exlinknum=numchange.InttoChar(exn, &pl);
+		char* exfn = filenamemerge(extlink, exlinknum, filetype);
+		wbr->newrelationadd(estr,er->id, (UINT8*)exfn);
+		free(exfn);
+		free(exlinknum);
+		er = er->next; exn++;
+	}	
+
+	
 	//workbookrel タグ付け
 	wbr->writewbrel();
 
@@ -580,7 +644,7 @@ char* PLRead::sheetread(char* hfn, CsvItemandRid* it,FILE* inf,UINT8* styo,UINT8
 			if (flag) {
 				break;
 			}
-			delete[] newfn;
+			free(newfn);
 			ci = ci->next;
 		}
 
@@ -654,14 +718,16 @@ writtenfilename* wfnadd(writtenfilename* r, char* n) {
 	return r;
 }
 //new sheet nomatchitem
-int PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* styleone, UINT8* styletwo,FILE* wf,char* ifn) {
+UINT8* PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* styleone, UINT8* styletwo,FILE* wf,char* ifn,UINT8* reld) {
 	const char sharefn[] = "xl/sharedStrings.xml";
 	char stylefn[] = "xl/styles.xml";
 	char workbrel[] = "xl/_rels/workbook.xml.rels";
 	char workb[] = "xl/workbook.xml";
 	char appfile[] = "docProps/app.xml";
+	UINT8 drawfilen[] = "../drawings/drawing";
 
 	size_t datlen = strlen((char*)d);
+	size_t reldatal = strlen((char*)reld);
 
 	Ctags* mh = new Ctags(d, datlen, shar);//シートデータ読み込み
 	mh->sheetread();
@@ -671,6 +737,7 @@ int PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* st
 	UINT8 sheet[] = "xl/worksheets/sheet";
 	UINT8 filetype[] = ".xml";
 	char* newfn = filenamemerge(sheet, citem->rid, filetype);
+	char* newrelfn = filenamemerge(drawfilen, citem->rid, filetype);
 
 	cddata->version = VERSION_LH;
 	cddata->bitflag = BITFLAG_LH;
@@ -687,13 +754,81 @@ int PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* st
 	cddata->filename = newfn;
 	cddata->fieldleng = 0;
 	cddata->fielcomment = 0;
-
+	
 	writecompress(mh->wd, mh->p, wf, cddata);
-
+	free(newfn);
+	/*
+	UINT8* drawid = nullptr;
+	if (mh->drawing_id) {
+		size_t idlen = strlen((char*)mh->drawing_id) + 1;
+		drawid = (UINT8*)malloc(sizeof(UINT8) * idlen);
+		strcpy_s((char*)drawid, idlen, (char*)mh->drawing_id);
+	}
+	*/
 	delete mh;
 	delete shar;
 
-	return 1;
+	return nullptr;
+}
+
+void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,UINT8* dreldata) {
+	size_t datlen = strlen((char*)drawdata);
+
+	dr = new DrawEdit(drawdata, datlen);
+	dr->readdraw();
+	dr->drawWrite();
+
+	UINT8 drn[] = "xl/drawings/drawing";
+	UINT8 filetype[] = ".xml";
+	char* newfn = filenamemerge(drn, rid, filetype);
+
+	cddata->version = VERSION_LH;
+	cddata->bitflag = BITFLAG_LH;
+	cddata->minversion = MAKEVERSION;
+	cddata->method = DEFLATE_LH_CD;
+	cddata->zokusei = 0;
+	cddata->gaibuzokusei = 0;
+	cddata->localheader = zip->writeposition;
+	cddata->time = (dd.times) & 0xFFFF;
+	cddata->day = (dd.times >> 16) & 0xFFFF;
+	cddata->size = 0;
+	cddata->nonsize = datlen;//内容変更したら　更新必要
+	cddata->filenameleng = strlen(newfn);
+	cddata->filename = newfn;
+	cddata->fieldleng = 0;
+	cddata->fielcomment = 0;
+
+	writecompress(dr->wd, dr->wl, f, cddata);
+	free(newfn);
+	
+	datlen = strlen((char*)dreldata);
+	dr->readdrawrels(dreldata, datlen);
+	dr->writerels();
+
+	UINT8 drel[] = "xl/_rels/drawing";
+	UINT8 filetyperel[] = ".xml.rels";
+	newfn = filenamemerge(drel, rid, filetyperel);
+
+	cddata->version = VERSION_LH;
+	cddata->bitflag = BITFLAG_LH;
+	cddata->minversion = MAKEVERSION;
+	cddata->method = DEFLATE_LH_CD;
+	cddata->zokusei = 0;
+	cddata->gaibuzokusei = 0;
+	cddata->localheader = zip->writeposition;
+	cddata->time = (dd.times) & 0xFFFF;
+	cddata->day = (dd.times >> 16) & 0xFFFF;
+	cddata->size = 0;
+	cddata->nonsize = datlen;//内容変更したら　更新必要
+	cddata->filenameleng = strlen(newfn);
+	cddata->filename = newfn;
+	cddata->fieldleng = 0;
+	cddata->fielcomment = 0;
+
+	writecompress(dr->rwd, dr->rwl, f, cddata);
+	free(newfn);
+
+	delete dr;
 }
 
 void PLRead::endrecordwrite(FILE* wf) {

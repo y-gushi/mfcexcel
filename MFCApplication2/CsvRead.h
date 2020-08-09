@@ -19,5 +19,6 @@ public:
     void freesize(Sizes* s);
     void freecolor(itemColors* c);
     void freeitem(CsvItemandRid* cv);
+    void freematchitem(CsvItemandRid* cv);
     int readCsv(char* fn);
 };

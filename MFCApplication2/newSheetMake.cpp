@@ -62,14 +62,22 @@ UINT8* Ctags::newSheet(UINT8* rid, UINT8* uuid,CsvItemandRid* citem,UINT8* style
 	}
 
 	//uuidÅ@ïœçX
-	size_t idlen = strlen((char*)uuid + 1);
+	size_t idlen = strlen((char*)uuid) + 3;
 	UINT8* newuuid = (UINT8*)malloc(sizeof(UINT8) * idlen);
+	size_t i = 0;
+	newuuid[i] = '{'; i++;
+	for (i; i < strlen((char*)uuid); i++) {
+		newuuid[i] = uuid[i - 1];
+	}
+	newuuid[i] = '{'; i++;
+	newuuid[i] = '\0';
+
 	free(wsV->uid);
 	wsV->uid = newuuid;
 
 	//draw id ïœçX
-	free(drawing_id);
-	drawing_id = nullptr;
+	//free(drawing_id);
+	//drawing_id = nullptr;
 
 	return drawing_id;
 }

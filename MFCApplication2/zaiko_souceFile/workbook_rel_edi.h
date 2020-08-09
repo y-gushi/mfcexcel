@@ -39,5 +39,5 @@ public:
 	void oneStrwrite(char* str);
 	void oneStrplusDoubleq(char* str, UINT8* v);
 	UINT8* getridNum();
-	void newrelationadd(UINT8* rid, UINT8* target);
+	void newrelationadd(UINT8* ty, UINT8* rid, UINT8* target);
 };

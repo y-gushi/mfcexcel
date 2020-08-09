@@ -33,14 +33,14 @@ void HeaderRead::freeER() {
 }
 
 void HeaderRead::freeheader() {
-    delete[] scd->filename;
-    delete[] scd->kakutyo;
-    delete[] scd->comment;
+    free(scd->filename);
+    free(scd->kakutyo);
+    free(scd->comment);
 }
 
 void HeaderRead::freeLH() {
-    delete[] LH->filename;
-    delete[] LH->kakutyo;
+    free(LH->filename);
+    free(LH->kakutyo);
 }
 
 //ファイル名でセントラルディレクトリ　データ検索
@@ -376,7 +376,7 @@ void HeaderRead::localread(UINT64 pos, std::ifstream* fin) {
     LH->filename = nullptr;
     if (LH->filenameleng > 0) {
         UINT32 msize = ((UINT32)LH->filenameleng) + 1;
-        LH->filename = new char[msize];
+        LH->filename = (char*)malloc(sizeof(char)*msize);
         if (LH->filename) {
             for (UINT16 i = 0; i < LH->filenameleng; i++) {
                 fin->read((char*)&readdata, sizeof(char));
@@ -390,7 +390,7 @@ void HeaderRead::localread(UINT64 pos, std::ifstream* fin) {
     LH->kakutyo = nullptr;
     if (LH->fieldleng > 0) {
         UINT32 msize = ((UINT32)LH->fieldleng) + 1;
-        LH->kakutyo = new char[msize];
+        LH->kakutyo = (char*)malloc(sizeof(char) * msize);
         if (LH->fieldleng > 0) {
             for (UINT16 i = 0; i < LH->fieldleng; i++) {
                 fin->read((char*)&readdata, sizeof(char));
@@ -403,9 +403,6 @@ void HeaderRead::localread(UINT64 pos, std::ifstream* fin) {
 }
 //セントラルディレクトリのヘッダー情報
 void HeaderRead::centerread(UINT64 pos, UINT32 size, UINT16 n, std::ifstream* fin) {
-    //std::cout << std::endl;
-
-    //std::ifstream fin(readfile, std::ios::in | std::ios::binary);
 
     if (!fin) {
         std::cout << "not file open" << std::endl;
@@ -444,35 +441,35 @@ void HeaderRead::centerread(UINT64 pos, UINT32 size, UINT16 n, std::ifstream* fi
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->minversion += readdata;
             }
-            //std::cout << "抽出に必要なバージョン（最小：" << CD->minversion << std::endl;
+
             CD->bitflag = 0;
             for (int i = 0; i < 2; i++) {
                 fin->read((char*)&readdata, sizeof(char));//汎用ビットフラグ
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->bitflag += readdata;
             }
-            //std::cout << "汎用ビットフラグ：" << CD->bitflag << std::endl;
+
             CD->method = 0;
             for (int i = 0; i < 2; i++) {//    圧縮方法
                 fin->read((char*)&readdata, sizeof(char));
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->method += readdata;
             }
-            //std::cout << "圧縮方法：" << CD->method << std::endl;
+
             CD->time = 0;
             for (int i = 0; i < 2; i++) {//    ファイルの最終変更時刻
                 fin->read((char*)&readdata, sizeof(char));
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->time += readdata;
             }
-            //std::cout << "ファイルの最終変更時刻：" << CD->time << std::endl;
+
             CD->day = 0;
             for (int i = 0; i < 2; i++) {//    ファイルの最終変更日
                 fin->read((char*)&readdata, sizeof(char));
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->day += readdata;
             }
-            //std::cout << "ファイルの最終変更日：" << CD->day << std::endl;
+
             //crc
             CD->crc = 0;
             for (int i = 0; i < 4; i++) {
@@ -480,7 +477,7 @@ void HeaderRead::centerread(UINT64 pos, UINT32 size, UINT16 n, std::ifstream* fi
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->crc += readdata;
             }
-            //std::cout << "CRC-32：" << CD->crc << std::endl;
+
             //    圧縮サイズ
             CD->size = 0;
             for (int i = 0; i < 4; i++) {
@@ -488,7 +485,7 @@ void HeaderRead::centerread(UINT64 pos, UINT32 size, UINT16 n, std::ifstream* fi
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->size += readdata;
             }
-            //std::cout << "圧縮サイズ：" << CD->size << std::endl;
+
             //    非圧縮サイズ
             CD->nonsize = 0;
             for (int i = 0; i < 4; i++) {
@@ -496,7 +493,7 @@ void HeaderRead::centerread(UINT64 pos, UINT32 size, UINT16 n, std::ifstream* fi
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->nonsize += readdata;
             }
-            //std::cout << "非圧縮サイズ：" << CD->nonsize << std::endl;
+
             //    ファイル名の長さ（n)
             CD->filenameleng = 0;
             for (int i = 0; i < 2; i++) {
@@ -525,45 +522,41 @@ void HeaderRead::centerread(UINT64 pos, UINT32 size, UINT16 n, std::ifstream* fi
                 readdata = (readdata << (8 * i));
                 CD->discnum += readdata;
             }
-            //std::cout << "ファイルが始まるディスク番号：" << CD->discnum << std::endl;
+
             CD->zokusei = 0;
             for (int i = 0; i < 2; i++) {//        内部ファイル属性
                 fin->read((char*)&readdata, sizeof(char));
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->zokusei += readdata;
             }
-            //std::cout << "内部ファイル属性：" << CD->zokusei << std::endl;
+
             CD->gaibuzokusei = 0;
             for (int i = 0; i < 4; i++) {//    外部ファイル属性
                 fin->read((char*)&readdata, sizeof(char));
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->gaibuzokusei += readdata;
             }
-            //std::cout << "外部ファイル属性：" << CD->gaibuzokusei << std::endl;
+
             CD->localheader = 0;
             for (int i = 0; i < 4; i++) {//    ローカルファイルヘッダの相対オフセット
                 fin->read((char*)&readdata, sizeof(char));
                 readdata = ((readdata & 0xFF) << (8 * i));
                 CD->localheader += readdata;
             }
-            //std::cout << "ローカルファイルヘッダの相対オフセット：" << CD->localheader << std::endl;
 
-            //std::cout << "ファイル名：";
             UINT32 msize = ((UINT32)CD->filenameleng) + 1;
-            CD->filename = new char[msize];
+            CD->filename = (char*)malloc(sizeof(char) * msize);
             for (int i = 0; i < CD->filenameleng; i++) {//    ファイル名
                 fin->read((char*)&headerReaddata, sizeof(char));
                 CD->filename[i] = headerReaddata;
                 //std::cout << CD->filename[i];
             }
             CD->filename[CD->filenameleng] = '\0';
-            //std::cout << std::endl;
 
-            //std::cout << "拡張フィールド：";
             CD->kakutyo = nullptr;            
             if (CD->fieldleng > 0) {
                 msize = ((UINT32)CD->fieldleng) + 1;
-                CD->kakutyo = new char[msize];
+                CD->kakutyo = (char*)malloc(sizeof(char) * msize);
                 for (int i = 0; i < CD->fieldleng; i++) {//    拡張フィールド
                     fin->read((char*)&readdata, sizeof(char));
                     CD->kakutyo[i] = readdata & 0xFF;
@@ -573,7 +566,7 @@ void HeaderRead::centerread(UINT64 pos, UINT32 size, UINT16 n, std::ifstream* fi
             CD->comment = nullptr;            
             if (CD->fielcomment > 0) {
                 msize = ((UINT32)CD->fielcomment) + 1;
-                CD->comment = new char[msize];
+                CD->comment = (char*)malloc(sizeof(char) * msize);
                 for (int i = 0; i < CD->fielcomment; i++) {//ファイルコメント
                     fin->read((char*)&readdata, sizeof(char));
                     CD->comment[i] = readdata & 0xFF;
@@ -723,7 +716,7 @@ CenterDerect* HeaderRead::centeroneread(UINT64 pos, UINT32 size, UINT16 n, char*
         }
 
         UINT32 msize = ((UINT32)scd->filenameleng) + 1;
-        scd->filename = new char[msize];
+        scd->filename = (char*)malloc(sizeof(char) * msize);
         for (int i = 0; i < scd->filenameleng; i++) {//    ファイル名
             fin->read((char*)&headerReaddata, sizeof(char));
             scd->filename[i] = headerReaddata;
@@ -734,7 +727,7 @@ CenterDerect* HeaderRead::centeroneread(UINT64 pos, UINT32 size, UINT16 n, char*
         scd->kakutyo = nullptr;
         if (scd->fieldleng > 0) {
             msize = ((UINT32)scd->fieldleng) + 1;
-            scd->kakutyo = new char[msize];
+            scd->kakutyo = (char*)malloc(sizeof(char) * msize);
             for (int i = 0; i < scd->fieldleng; i++) {//    拡張フィールド
                 fin->read((char*)&readdata, sizeof(char));
                 scd->kakutyo[i] = readdata & 0xFF;
@@ -744,7 +737,7 @@ CenterDerect* HeaderRead::centeroneread(UINT64 pos, UINT32 size, UINT16 n, char*
         scd->comment = nullptr;
         if (scd->fielcomment) {
             msize = ((UINT32)scd->fielcomment) + 1;
-            scd->comment = new char[msize];
+            scd->comment = (char*)malloc(sizeof(char) * msize);
             for (int i = 0; i < scd->fielcomment; i++) {//ファイルコメント
                 fin->read((char*)&readdata, sizeof(char));
                 scd->comment[i] = readdata & 0xFF;
