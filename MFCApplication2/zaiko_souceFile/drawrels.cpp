@@ -2,10 +2,12 @@
 
 void DrawEdit::readdrawrels(UINT8* data, UINT32 datalen) {
 	const char* headstr = "<Relationships";//14
+	const char* etag = "</Relationships>";//16
 	rd = data;
 	rdl = datalen;
 
 	UINT8 one[15] = { 0 };
+	UINT8 two[17] = { 0 };
 
 	while (data[relp] != '>')
 		relp++;
@@ -21,14 +23,18 @@ void DrawEdit::readdrawrels(UINT8* data, UINT32 datalen) {
 
 	do
 	{
-		for (int i = 0; i < 13; i++) {
-			one[i] = one[i + 1];
+		for (int i = 0; i < 15; i++) {
+			two[i] = two[i + 1];
+			if (i < 13)
+				one[i] = one[i + 1];
 		}
-		one[13] = data[relp]; relp++;
+		two[15] = one[13] = data[relp]; relp++;
 
 		res = strncmp((char*)one, headstr, 14);
 		if (res == 0)
 			read_Relations();
+
+		res = strncmp((char*)two, etag, 16);
 
 	} while (res != 0);
 }
@@ -50,7 +56,7 @@ void DrawEdit::read_Relations() {
 
 		res = strncmp((char*)one, relstrs, 7);
 		if (res == 0)
-			relsxmlns = getvalue();
+			relsxmlns = getrelvalue();
 	}
 
 	do
@@ -62,7 +68,7 @@ void DrawEdit::read_Relations() {
 
 		res = strncmp((char*)two, relationstr, 13);
 		if (res == 0)
-			relsxmlns = getvalue();
+			read_Relationship();
 	} while (res != 0);
 }
 
@@ -118,18 +124,19 @@ void DrawEdit::read_Relationship() {
 
 		res = strncmp((char*)one, valstr[0], 4);
 		if (res == 0)
-			id = getvalue();
+			id = getrelvalue();
 
 		res = strncmp((char*)two, valstr[1], 8);
 		if (res == 0)
-			tar = getvalue();
+			tar = getrelvalue();
 
-		res = strncmp((char*)two, valstr[2], 6);
+		res = strncmp((char*)thr, valstr[2], 6);
 		if (res == 0)
-			ty = getvalue();
+			ty = getrelvalue();
 	}
 
-	relroot = addrels(relroot, id, tar,ty);
+	relroot = addrels(relroot, id, tar, ty);
+
 }
 
 void DrawEdit::writerels() {
@@ -156,6 +163,28 @@ void DrawEdit::writerels() {
 		sr = sr->next;
 	}
 	rels_oneStrwrite((UINT8*)relstrs[6]);
+}
+
+UINT8* DrawEdit::getrelvalue() {
+
+	UINT32 len = 0;
+	UINT8* Sv = nullptr;
+
+	while (rd[relp + len] != '"')
+		len++;
+
+	stocklen = len;
+	UINT32 ssize = len + 1;
+
+	Sv = (UINT8*)malloc(ssize);
+
+	for (UINT32 i = 0; i < len; i++) {
+		Sv[i] = rd[relp]; relp++;
+	}
+
+	Sv[len] = '\0';
+
+	return Sv;
 }
 
 void DrawEdit::rels_Doubleqwrite(UINT8* str, UINT8* v) {

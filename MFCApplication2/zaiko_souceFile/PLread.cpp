@@ -730,12 +730,12 @@ UINT8* PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8*
 	Ctags* mh = new Ctags(d, datlen, shar);//シートデータ読み込み
 	mh->sheetread();
 	mh->newSheet(nullptr, uuid, citem, styleone, styletwo);
+
 	mh->writesheetdata();
 
 	UINT8 sheet[] = "xl/worksheets/sheet";
 	UINT8 filetype[] = ".xml";
 	char* newfn = filenamemerge(sheet, citem->rid, filetype);
-	char* newrelfn = filenamemerge(drawfilen, citem->rid, filetype);
 
 	cddata->version = VERSION_LH;
 	cddata->bitflag = BITFLAG_LH;
@@ -763,6 +763,35 @@ UINT8* PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8*
 		strcpy_s((char*)drawid, idlen, (char*)mh->drawing_id);
 	}
 	*/
+	//sheet rel 書き込み
+	UINT8 shrel[] = "xl/worksheets/_rels/sheet";
+	UINT8 filereltype[] = ".xml.rels";
+	char* newrelfn = filenamemerge(shrel, citem->rid, filereltype);
+
+	mh->readsheetrels(reld, reldatal);
+	free(mh->relroot->target);
+	mh->relroot->target = (UINT8*)newrelfn;
+
+	mh->writerels();
+
+	cddata->version = VERSION_LH;
+	cddata->bitflag = BITFLAG_LH;
+	cddata->minversion = MAKEVERSION;
+	cddata->method = DEFLATE_LH_CD;
+	cddata->zokusei = 0;
+	cddata->gaibuzokusei = 0;
+	cddata->localheader = zip->writeposition;
+	cddata->time = (dd.times) & 0xFFFF;
+	cddata->day = (dd.times >> 16) & 0xFFFF;
+	cddata->size = 0;
+	cddata->nonsize = mh->wl & 0xFFFFFFFF;//内容変更したら　更新必要
+	cddata->filenameleng = strlen(newrelfn);
+	cddata->filename = newrelfn;
+	cddata->fieldleng = 0;
+	cddata->fielcomment = 0;
+
+	writecompress(mh->rwd, mh->wl, wf, cddata);
+
 	delete mh;
 	delete shar;
 
@@ -790,7 +819,7 @@ void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,U
 	cddata->time = (dd.times) & 0xFFFF;
 	cddata->day = (dd.times >> 16) & 0xFFFF;
 	cddata->size = 0;
-	cddata->nonsize = datlen;//内容変更したら　更新必要
+	cddata->nonsize = dr->wl;//内容変更したら　更新必要
 	cddata->filenameleng = strlen(newfn);
 	cddata->filename = newfn;
 	cddata->fieldleng = 0;
@@ -803,7 +832,7 @@ void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,U
 	dr->readdrawrels(dreldata, datlen);
 	dr->writerels();
 
-	UINT8 drel[] = "xl/_rels/drawing";
+	UINT8 drel[] = "xl/drawings/_rels/drawing";
 	UINT8 filetyperel[] = ".xml.rels";
 	newfn = filenamemerge(drel, rid, filetyperel);
 
@@ -817,7 +846,7 @@ void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,U
 	cddata->time = (dd.times) & 0xFFFF;
 	cddata->day = (dd.times >> 16) & 0xFFFF;
 	cddata->size = 0;
-	cddata->nonsize = datlen;//内容変更したら　更新必要
+	cddata->nonsize = dr->rwl;//内容変更したら　更新必要
 	cddata->filenameleng = strlen(newfn);
 	cddata->filename = newfn;
 	cddata->fieldleng = 0;

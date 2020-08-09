@@ -39,7 +39,8 @@ DrawEdit::~DrawEdit()
 
 void DrawEdit::readdraw()
 {
-	const char* heads[] = { "<xdr:wsDr","<xdr:oneCellAnchor>","</xdr:wsDr>" };//9 19 11
+	const char* heads[] = { "<xdr:wsDr","<xdr:twoCellAnchor","</xdr:wsDr>" };//9 18 11
+	//xdr:oneCellAnchor xdr:twoCellAnchor •Ï‰»‚·‚é
 
 	UINT8 one[10] = { 0 };
 	UINT8 two[20] = { 0 };
@@ -71,14 +72,14 @@ void DrawEdit::readdraw()
 
 	do
 	{
-		for (int i = 0; i < 18; i++) {
+		for (int i = 0; i < 17; i++) {
 			two[i] = two[i + 1];
 			if(i<10)
 				thr[i] = thr[i + 1];
 		}
-		thr[10] = two[18] = d[p]; p++;
+		thr[10] = two[17] = d[p]; p++;
 
-		res = strncmp((char*)two, heads[1], 19);
+		res = strncmp((char*)two, heads[1], 18);
 		if (res == 0)
 			readoneAnchor();
 
@@ -114,25 +115,28 @@ void DrawEdit::read_xdr_wsDr() {
 
 }
 
-Anchor* DrawEdit::addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl) {
+Anchor* DrawEdit::addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl,UINT8* ed) {
 	if (!a) {
 		a = (Anchor*)malloc(sizeof(Anchor));
 		a->f = f;
 		a->ex = ex;
 		a->p = pi;
 		a->clientD = cl;
+		a->editAs = ed;
 		a->next = nullptr;
 	}
 	else {
-		a->next = addAnchor(a->next, f, pi, ex, cl);
+		a->next = addAnchor(a->next, f, pi, ex, cl,ed);
 	}
 
 	return a;
 }
 
 void DrawEdit::readoneAnchor() {
-	const char* xdrstr[] = { "<xdr:from>","<xdr:pic>","</xdr:oneCellAnchor>","<xdr:ext","<xdr:clientData" };
+	const char* xdrstr[] = { "<xdr:from>","<xdr:pic>","</xdr:twoCellAnchor>","<xdr:ext","<xdr:clientData" };// </xdr:oneCellAnchor> </xdr:twoCellAnchor>
+	const char* anchoval = "editAs=\"";//8
 	//10 9 20 8 15
+	UINT8 zero[9] = { 0 };
 	UINT8 one[11] = { 0 };
 	UINT8 two[10] = { 0 };
 	UINT8 thr[21] = { 0 };
@@ -143,8 +147,21 @@ void DrawEdit::readoneAnchor() {
 	xdr_from* fro = nullptr;
 	oneCellAnchor_ext *oex= nullptr;
 	UINT8* clientData = nullptr;
+	UINT8* edas = nullptr;
 
 	int res = 0;
+
+	while (d[p] != '>') {
+		for (int i = 0; i < 7; i++) {
+			zero[i] = zero[i + 1];
+		}
+		zero[7] = d[p];
+		p++;
+
+		res = strncmp((char*)zero, anchoval, 8);
+		if (res == 0)
+			edas = getvalue();
+	}
 
 	do
 	{
@@ -181,7 +198,8 @@ void DrawEdit::readoneAnchor() {
 
 	} while (res != 0);
 
-	Anroot = addAnchor(Anroot, fro, pi, oex, clientData);
+	Anroot = addAnchor(Anroot, fro, pi, oex, clientData, edas);
+
 }
 
 void DrawEdit::freeAnchor() {
@@ -192,6 +210,7 @@ void DrawEdit::freeAnchor() {
 		freepic(Anroot->p);
 		freeoneCell(Anroot->ex);
 		free(Anroot->clientD);
+		free(Anroot->editAs);
 		Anroot = p;
 	}	
 }

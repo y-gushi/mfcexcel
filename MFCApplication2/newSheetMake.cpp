@@ -56,6 +56,7 @@ UINT8* Ctags::newSheet(UINT8* rid, UINT8* uuid,CsvItemandRid* citem,UINT8* style
 
 			addcelldata(itemnumrow, stockvalue, tval, sv, val, nullptr, nullptr);
 
+			itemnumrow++;
 			sz = sz->next;
 		}
 		cl = cl->next;

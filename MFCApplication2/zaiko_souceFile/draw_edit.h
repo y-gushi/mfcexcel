@@ -116,6 +116,7 @@ struct Anchor {
 	xdr_pic* p;
 	oneCellAnchor_ext* ex;
 	UINT8* clientD;
+	UINT8* editAs;
 	Anchor* next;
 };
 
@@ -161,7 +162,7 @@ public:
 
 	void read_xdr_wsDr();
 
-	Anchor* addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl);
+	Anchor* addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl, UINT8* ed);
 
 	void readoneAnchor();
 
@@ -263,6 +264,7 @@ public:
 	void freerels();
 	void read_Relationship();
 	void writerels();
+	UINT8* getrelvalue();
 	void rels_Doubleqwrite(UINT8* str, UINT8* v);
 	void rels_oneStrwrite(UINT8* str);
 };

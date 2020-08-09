@@ -79,7 +79,7 @@ void Ctags::addcelldata(UINT32 row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
 }
 
 void Ctags::writesheetdata() {
-    size_t msize = size_t(dlen) + 10000;
+    size_t msize = size_t(dlen) + 20000;
 
     wd = (UINT8*)malloc(msize);//メモリサイズ変更　書き込み用
 

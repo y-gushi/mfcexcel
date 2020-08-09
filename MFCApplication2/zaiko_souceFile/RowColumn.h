@@ -7,6 +7,7 @@
 struct sheetRels {
     UINT8* id;
     UINT8* target;
+    UINT8* type;
     sheetRels* next;
 };
 
@@ -199,12 +200,14 @@ public:
     void oneStrplusDoubleq(UINT8* str, UINT8* v);
 
     void oneStrwrite(UINT8* str);
-    void readsheetrels(UINT8* data, UINT32 datalen);
+    void readsheetrels(UINT8* red, UINT32 datalen);
     void read_Relations();
-    sheetRels* addrels(sheetRels* sr, UINT8* id, UINT8* t);
+    sheetRels* addrels(sheetRels* sr, UINT8* id, UINT8* t, UINT8* ty);
+
     void freerels();
     void read_Relationship();
     void writerels();
+    UINT8* getrelvalue();
     void rels_Doubleqwrite(UINT8* str, UINT8* v);
     void rels_oneStrwrite(UINT8* str);
     void colsSettingPlus(cols* nc);

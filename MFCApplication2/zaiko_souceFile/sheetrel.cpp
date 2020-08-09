@@ -1,20 +1,22 @@
 #include "RowColumn.h"
 #include <atlsimpcoll.h>
 
-void Ctags::readsheetrels(UINT8* data, UINT32 datalen) {
+void Ctags::readsheetrels(UINT8* red, UINT32 datalen) {
 	const char* headstr = "<Relationships";//14
-	rd = data;
+	const char* etag = "</Relationships>";//16
+	rd = red;
 	rdl = datalen;
 
 	UINT8 one[15] = { 0 };
+	UINT8 two[17] = { 0 };
 
-	while (data[relp] != '>')
+	while (rd[relp] != '>')
 		relp++;
 	relp++;
 	relhstr = (UINT8*)malloc(sizeof(UINT8) * (relp + 1));
 
 	for (UINT32 i = 0; i < relp; i++) {
-		relhstr[i] = data[i];
+		relhstr[i] = rd[i];
 	}
 	relhstr[relp] = '\0';
 
@@ -22,20 +24,20 @@ void Ctags::readsheetrels(UINT8* data, UINT32 datalen) {
 
 	do
 	{
-		for (int i = 0; i < 13; i++) {
-			one[i] = one[i + 1];
+		for (int i = 0; i < 15; i++) {
+			two[i] = two[i + 1];
+			if(i<13)
+				one[i] = one[i + 1];
 		}
-		one[13] = data[relp]; relp++;
+		two[15] = one[13] = rd[relp]; relp++;
 
 		res = strncmp((char*)one, headstr, 14);
 		if (res == 0)
 			read_Relations();
 
+		res = strncmp((char*)two, etag, 16);
+
 	} while (res != 0);
-}
-
-void newsheetrel(UINT8* drawrid, UINT8* fin) {
-
 }
 
 void Ctags::read_Relations() {
@@ -55,7 +57,7 @@ void Ctags::read_Relations() {
 
 		res = strncmp((char*)one, relstrs, 7);
 		if (res == 0)
-			relsxmlns=getvalue();
+			relsxmlns=getrelvalue();
 	}
 
 	do
@@ -63,23 +65,25 @@ void Ctags::read_Relations() {
 		for (int i = 0; i < 12; i++) {
 			two[i] = two[i + 1];
 		}
-		two[6] = rd[relp]; relp++;
+		two[12] = rd[relp]; relp++;
 
 		res = strncmp((char*)two, relationstr, 13);
 		if (res == 0)
-			relsxmlns = getvalue();
+			read_Relationship();
 	} while (res != 0);
+
 }
 
-sheetRels* Ctags::addrels(sheetRels* sr, UINT8* id, UINT8* t) {
+sheetRels* Ctags::addrels(sheetRels* sr, UINT8* id, UINT8* t,UINT8* ty) {
 	if (!sr) {
 		sr = (sheetRels*)malloc(sizeof(sheetRels));
 		sr->id = id;
 		sr->target = t;
+		sr->type = ty;
 		sr->next = nullptr;
 	}
 	else {
-		sr->next = addrels(sr->next, id, t);
+		sr->next = addrels(sr->next, id, t, ty);
 	}
 
 	return sr;
@@ -91,20 +95,24 @@ void Ctags::freerels() {
 		p = relroot->next;
 		free(relroot->id);
 		free(relroot->target);
+		free(relroot->type);
+		free(relroot);
 		relroot = p;
 	}
 }
 
 void Ctags::read_Relationship() {
-	const char* valstr[] = { "Id=\"","Target=\"" };//4 8
+	const char* valstr[] = { "Id=\"","Target=\"","Type=\"" };//4 8 6
 
 	UINT8 one[5] = { 0 };
 	UINT8 two[9] = { 0 };
+	UINT8 thre[7] = { 0 };
 
 	int res = 0;
 
 	UINT8* id = nullptr;
 	UINT8* tar = nullptr;
+	UINT8* ty = nullptr;
 
 	while (rd[relp] != '>')
 	{
@@ -112,19 +120,26 @@ void Ctags::read_Relationship() {
 			two[i] = two[i + 1];
 			if(i<3)
 				one[i] = one[i + 1];
+			if (i < 5)
+				thre[i] = thre[i + 1];
 		}
-		two[7] = one[3] = rd[relp]; relp++;
+		thre[5]=two[7] = one[3] = rd[relp]; relp++;
 
 		res = strncmp((char*)one, valstr[0], 4);
 		if (res == 0)
-			id = getvalue();
+			id = getrelvalue();
 
 		res = strncmp((char*)two, valstr[1], 8);
 		if (res == 0)
-			tar = getvalue();
+			tar = getrelvalue();
+
+		res = strncmp((char*)thre, valstr[2], 6);
+		if (res == 0)
+			ty = getrelvalue();
 	}
 
-	relroot = addrels(relroot, id, tar);
+	relroot = addrels(relroot, id, tar, ty);
+
 }
 
 void Ctags::writerels() {
@@ -150,6 +165,28 @@ void Ctags::writerels() {
 		sr = sr->next;
 	}
 	rels_oneStrwrite((UINT8*)relstrs[5]);	
+}
+
+UINT8* Ctags::getrelvalue() {
+
+	UINT32 len = 0;
+	UINT8* Sv = nullptr;
+
+	while (rd[relp + len] != '"')
+		len++;
+
+	stocklen = len;
+	UINT32 ssize = len + 1;
+
+	Sv = (UINT8*)malloc(ssize);
+
+	for (UINT32 i = 0; i < len; i++) {
+		Sv[i] = rd[relp]; relp++;
+	}
+
+	Sv[len] = '\0';
+
+	return Sv;
 }
 
 void Ctags::rels_Doubleqwrite(UINT8* str, UINT8* v) {

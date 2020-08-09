@@ -2,7 +2,7 @@
 
 void DrawEdit::drawWrite() {
 	const char* headstr[] = { "<xdr:wsDr"," xmlns:xdr=\""," xmlns:a=\"" };
-	const char* oneCellstr[] = { "<xdr:oneCellAnchor>" };
+	const char* oneCellstr[] = { "<xdr:twoCellAnchor"," editAs=\"" };
 	const char* fromstr[] = { "<xdr:from>","<xdr:col>","</xdr:col>","<xdr:colOff>","</xdr:colOff>","<xdr:row>","</xdr:row>",
 		"<xdr:rowOff>","</xdr:rowOff>","</xdr:from>" };
 	const char* extstr[] = { "<xdr:ext"," cx=\""," cy=\"" };
@@ -17,7 +17,7 @@ void DrawEdit::drawWrite() {
 	const char* pestgeostr[] = { "<a:prstGeom"," prst=\"","<a:avLst","</a:prstGeom>","<a:noFill" };
 	const char* spexstr[] = { "<a:extLst>","<a:ext"," uri=\"","<a14:hiddenFill"," xmlns:a14=\"","<a:solidFill>","<a:srgbClr",
 	" val=\"","</a:solidFill>","</a14:hiddenFill>","</a:ext>","</a:extLst>","</xdr:spPr>","</xdr:pic>"};
-	const char* laststr[] = { "<xdr:clientData","</xdr:oneCellAnchor>","</xdr:wsDr>" };
+	const char* laststr[] = { "<xdr:clientData","</xdr:twoCellAnchor>","</xdr:wsDr>" };
 	char clo = '>';
 	const char* sla = "/>";
 
@@ -41,6 +41,10 @@ void DrawEdit::drawWrite() {
 	Anchor* an = Anroot;
 	while (an) {
 		oneStrwrite((char*)oneCellstr[0]);
+		if (an->editAs) {
+			oneStrplusDoubleq((char*)oneCellstr[1], an->editAs);
+		}
+		wd[wl] = clo; wl++;
 
 		oneStrwrite((char*)fromstr[0]);
 
