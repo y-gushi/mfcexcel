@@ -58,7 +58,7 @@ void DrawEdit::read_Relations() {
 		for (int i = 0; i < 12; i++) {
 			two[i] = two[i + 1];
 		}
-		two[6] = rd[relp]; relp++;
+		two[12] = rd[relp]; relp++;
 
 		res = strncmp((char*)two, relationstr, 13);
 		if (res == 0)

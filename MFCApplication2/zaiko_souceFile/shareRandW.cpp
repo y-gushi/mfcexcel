@@ -360,11 +360,13 @@ UINT8* shareRandD::searchSi(char* ipto) {
         }
     }
 
-    if (!inputsinum[0] && o > 0) {
+    if (!num && o > 0) {
         //文字si追加
+
         addsistr((UINT8*)ipto);
         int pl=0;
-        UINT8* strnum = st.InttoChar(siunique, &pl);
+        UINT8* strnum = st.InttoChar(siunique-1, &pl);
+
         return strnum;
     }
 
@@ -386,8 +388,6 @@ void shareRandD::ReadShare() {
     newsize = newsize * (siunique);
     sis = (Si**)calloc(newsize, sizeof(Si));//si数分の配列確保
 
-    //テスト用
-    //searchItemNum change = searchItemNum(nullptr);
     dp = 0;
 
     if (sip && sis && Esip) {

@@ -28,3 +28,10 @@ char* searchItemNum::CharChenge(UINT8* cc) {
     std::string strSJis(bufShiftJis);
     return bufShiftJis;
 }
+
+char* searchItemNum::SJIStoUTF8(char* szSJIS, char* bufUTF8, int size) {
+    wchar_t bufUnicode[255];
+    int lenUnicode = MultiByteToWideChar(CP_ACP, 0, szSJIS, strlen(szSJIS) + 1, bufUnicode, 255);
+    WideCharToMultiByte(CP_UTF8, 0, bufUnicode, lenUnicode, bufUTF8, size, NULL, NULL);
+    return bufUTF8;
+}

@@ -38,4 +38,5 @@ public:
     MatchColrs* addmatches(MatchColrs* m, UINT8* i, UINT8* c);
     Items* addItems(Items* base, Items* itm);
     char* CharChenge(UINT8* cc);
+    char* SJIStoUTF8(char* szSJIS, char* bufUTF8, int size);
 };

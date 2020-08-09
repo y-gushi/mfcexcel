@@ -445,25 +445,30 @@ void PLRead::ItemsChangeShare(CsvItemandRid* citem) {
 	UINT8* stocknum = nullptr;
 	//品番シェアー入力
 	stocknum = shar->searchSi((char*)citem->it);
-	free(citem->it);
+	//free(citem->it);
 	citem->it = stocknum;
 
 	//カラー名シェアー入力
 	itemColors *itc = citem->c;
 	itemColors* cl = citem->c;
 	Sizes* sz = nullptr;
+	searchItemNum* sin = new searchItemNum(nullptr,nullptr);
 
 	while (cl) {
 		sz = cl->s;
 		while (sz) {
 			//カラー　サイズ　結合
-			size_t csiz = strlen((char*)cl->color);
+			//カラー utf8に
+			char* Newcol = (char*)calloc(100, sizeof(char));
+			sin->SJIStoUTF8((char*)cl->color, Newcol, 100);
+
+			size_t csiz = strlen(Newcol);
 			size_t ssiz = strlen((char*)sz->size);
 
 			UINT8* mergestr = (UINT8*)malloc(sizeof(UINT8) * (csiz + ssiz + 2));
 			int i = 0;
-			while (cl->color[i] != '\0') {
-				mergestr[i] = cl->color[i];
+			while (Newcol[i] != '\0') {
+				mergestr[i] = Newcol[i];
 				i++;
 			}
 
@@ -474,7 +479,7 @@ void PLRead::ItemsChangeShare(CsvItemandRid* citem) {
 				mergestr[csiz + i] = sz->size[i];
 				i++;
 			}
-
+			
 			mergestr[csiz + i] = '\0';
 
 			//シェアー入力
@@ -485,13 +490,6 @@ void PLRead::ItemsChangeShare(CsvItemandRid* citem) {
 			sz = sz->next;
 		}
 		cl = cl->next;
-	}
-
-	while (itc) {
-		stocknum = shar->searchSi((char*)itc->color);
-		free(itc->color);
-		itc->color = stocknum;
-		itc = itc->next;
 	}
 }
 
