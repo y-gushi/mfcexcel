@@ -311,6 +311,8 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 	delete pl->wb;
 	delete pl->ap;
 
+	//content_type 更新
+
 	pl->endrecordwrite(wf);
 
 	cr->freematchitem(pl->matchs);

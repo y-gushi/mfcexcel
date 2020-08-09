@@ -817,7 +817,7 @@ void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,U
 	nid[nidlen] = '}'; nidlen++;
 	nid[nidlen] = '\0';
 
-	dr->Anroot->p->p->Pr->exLst->a16->id = uid;
+	dr->Anroot->p->p->Pr->exLst->a16->id = nid;
 	dr->drawWrite();
 
 	UINT8 drn[] = "xl/drawings/drawing";
