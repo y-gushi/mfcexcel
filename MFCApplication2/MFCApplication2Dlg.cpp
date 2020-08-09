@@ -292,7 +292,9 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 			drawid=pl->newSheetWrite((UINT8*)newshdata, (UINT8*)uid, ro, styone, stytwo, wf, hatyu, (UINT8*)newshreldata);
 			
 			//draw xml作成
-			pl->makedrawxml((UINT8*)drawdata, ro->rid, nullptr, wf, (UINT8*)drawreldata);
+			uuid = GuidToString(guid);
+			uid = uuid.c_str();
+			pl->makedrawxml((UINT8*)drawdata, ro->rid, nullptr, wf, (UINT8*)drawreldata, (UINT8*)uid);
 
 			ro = ro->next;
 		}

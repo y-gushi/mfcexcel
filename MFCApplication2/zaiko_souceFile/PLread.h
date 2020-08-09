@@ -167,7 +167,7 @@ public:
 	// new sheet make
 	UINT8* newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* styleone, UINT8* styletwo, FILE* wf, char* ifn, UINT8* reld);
 
-	void makedrawxml(UINT8* drawdata, UINT8* rid, UINT8* targetfile, FILE* f, UINT8* dreldata);
+	void makedrawxml(UINT8* drawdata, UINT8* rid, UINT8* targetfile, FILE* f, UINT8* dreldata, UINT8* uid);
 
 	void endrecordwrite(FILE* wf);
 

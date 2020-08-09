@@ -143,11 +143,11 @@ void Ctags::read_Relationship() {
 }
 
 void Ctags::writerels() {
-	const char* relstrs[] = { "<Relationships"," xmlns=\"","<Relationship"," Id=\""," Target=\"","</Relationships>" };
+	const char* relstrs[] = { "<Relationships"," xmlns=\"","<Relationship"," Id=\""," Target=\"","</Relationships>"," Type=\"" };
 	char clo = '>';
 	const char* sla = "/>";
 
-	size_t newsiz = rdl;
+	size_t newsiz = rdl+3000;
 	rwd = (UINT8*)malloc(sizeof(UINT8) * newsiz);
 
 	rels_oneStrwrite(relhstr);
@@ -160,6 +160,7 @@ void Ctags::writerels() {
 	while (sr) {
 		rels_oneStrwrite((UINT8*)relstrs[2]);
 		rels_Doubleqwrite((UINT8*)relstrs[3], sr->id);
+		rels_Doubleqwrite((UINT8*)relstrs[6], sr->type);
 		rels_Doubleqwrite((UINT8*)relstrs[4], sr->target);
 		rels_oneStrwrite((UINT8*)sla);
 		sr = sr->next;

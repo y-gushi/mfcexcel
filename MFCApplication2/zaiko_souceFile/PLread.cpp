@@ -768,9 +768,11 @@ UINT8* PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8*
 	UINT8 filereltype[] = ".xml.rels";
 	char* newrelfn = filenamemerge(shrel, citem->rid, filereltype);
 
+	char* drtarget = filenamemerge(drawfilen, citem->rid, filetype);
+
 	mh->readsheetrels(reld, reldatal);
 	free(mh->relroot->target);
-	mh->relroot->target = (UINT8*)newrelfn;
+	mh->relroot->target = (UINT8*)drtarget;
 
 	mh->writerels();
 
@@ -798,11 +800,24 @@ UINT8* PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8*
 	return nullptr;
 }
 
-void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,UINT8* dreldata) {
+void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,UINT8* dreldata,UINT8* uid) {
 	size_t datlen = strlen((char*)drawdata);
 
 	dr = new DrawEdit(drawdata, datlen);
 	dr->readdraw();
+	free(dr->Anroot->p->p->Pr->exLst->a16->id);
+
+	size_t nidlen = strlen((char*)uid) + 3;
+	UINT8* nid = (UINT8*)malloc(sizeof(UINT8) * nidlen);
+	nidlen = 0;
+	nid[nidlen] = '{'; nidlen++;
+	for (nidlen; nidlen < strlen((char*)uid); nidlen++) {
+		nid[nidlen] = uid[nidlen - 1];
+	}
+	nid[nidlen] = '}'; nidlen++;
+	nid[nidlen] = '\0';
+
+	dr->Anroot->p->p->Pr->exLst->a16->id = uid;
 	dr->drawWrite();
 
 	UINT8 drn[] = "xl/drawings/drawing";

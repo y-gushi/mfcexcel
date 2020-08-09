@@ -11,6 +11,14 @@ struct xdr_from
 	UINT8* rowOff;
 };
 
+struct xdr_to
+{
+	UINT8* col;
+	UINT8* colOff;
+	UINT8* row;
+	UINT8* rowOff;
+};
+
 struct a16_creation
 {
 	UINT8* crexmlns_a16;
@@ -113,6 +121,7 @@ struct oneCellAnchor_ext
 
 struct Anchor {
 	xdr_from* f;
+	xdr_to* t;
 	xdr_pic* p;
 	oneCellAnchor_ext* ex;
 	UINT8* clientD;
@@ -162,7 +171,7 @@ public:
 
 	void read_xdr_wsDr();
 
-	Anchor* addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl, UINT8* ed);
+	Anchor* addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl, UINT8* ed, xdr_to* t);
 
 	void readoneAnchor();
 
@@ -184,6 +193,8 @@ public:
 
 	void freefrom(xdr_from* f);
 
+	void freeto(xdr_to* f);
+
 	void freeblipFill(blipFill* bf);
 
 	void freeblip(blip* b);
@@ -193,6 +204,8 @@ public:
 	UINT8* read_clientData();
 
 	xdr_from* read_Xdrfrom();
+
+	xdr_to* read_Xdrto();
 
 	oneCellAnchor_ext* read_xdrext();
 

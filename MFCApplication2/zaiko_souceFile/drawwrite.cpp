@@ -5,6 +5,7 @@ void DrawEdit::drawWrite() {
 	const char* oneCellstr[] = { "<xdr:twoCellAnchor"," editAs=\"" };
 	const char* fromstr[] = { "<xdr:from>","<xdr:col>","</xdr:col>","<xdr:colOff>","</xdr:colOff>","<xdr:row>","</xdr:row>",
 		"<xdr:rowOff>","</xdr:rowOff>","</xdr:from>" };
+	const char* tostr[] = { "<xdr:to>","</xdr:to>" };
 	const char* extstr[] = { "<xdr:ext"," cx=\""," cy=\"" };
 	const char* picstr[] = { "<xdr:pic>","</xdr:pic>" };
 	const char* nvprstr[] = { "<xdr:nvPicPr>","<xdr:cNvPr"," id=\""," name=\"","<a:extLst>","<a:ext"," uri=\"","<a16:creationId",
@@ -45,26 +46,48 @@ void DrawEdit::drawWrite() {
 			oneStrplusDoubleq((char*)oneCellstr[1], an->editAs);
 		}
 		wd[wl] = clo; wl++;
+		if (an->f) {
+			oneStrwrite((char*)fromstr[0]);
 
-		oneStrwrite((char*)fromstr[0]);
+			oneStrwrite((char*)fromstr[1]);
+			oneStrwrite((char*)an->f->col);
+			oneStrwrite((char*)fromstr[2]);
 
-		oneStrwrite((char*)fromstr[1]);
-		oneStrwrite((char*)an->f->col);
-		oneStrwrite((char*)fromstr[2]);
+			oneStrwrite((char*)fromstr[3]);
+			oneStrwrite((char*)an->f->colOff);
+			oneStrwrite((char*)fromstr[4]);
 
-		oneStrwrite((char*)fromstr[3]);
-		oneStrwrite((char*)an->f->colOff);
-		oneStrwrite((char*)fromstr[4]);
+			oneStrwrite((char*)fromstr[5]);
+			oneStrwrite((char*)an->f->row);
+			oneStrwrite((char*)fromstr[6]);
 
-		oneStrwrite((char*)fromstr[5]);
-		oneStrwrite((char*)an->f->row);
-		oneStrwrite((char*)fromstr[6]);
+			oneStrwrite((char*)fromstr[7]);
+			oneStrwrite((char*)an->f->rowOff);
+			oneStrwrite((char*)fromstr[8]);
 
-		oneStrwrite((char*)fromstr[7]);
-		oneStrwrite((char*)an->f->rowOff);
-		oneStrwrite((char*)fromstr[8]);
+			oneStrwrite((char*)fromstr[9]);
+		}
+		if (an->t) {
+			oneStrwrite((char*)tostr[0]);
 
-		oneStrwrite((char*)fromstr[9]);
+			oneStrwrite((char*)fromstr[1]);
+			oneStrwrite((char*)an->t->col);
+			oneStrwrite((char*)fromstr[2]);
+
+			oneStrwrite((char*)fromstr[3]);
+			oneStrwrite((char*)an->t->colOff);
+			oneStrwrite((char*)fromstr[4]);
+
+			oneStrwrite((char*)fromstr[5]);
+			oneStrwrite((char*)an->t->row);
+			oneStrwrite((char*)fromstr[6]);
+
+			oneStrwrite((char*)fromstr[7]);
+			oneStrwrite((char*)an->t->rowOff);
+			oneStrwrite((char*)fromstr[8]);
+
+			oneStrwrite((char*)tostr[1]);
+		}
 
 		oneStrwrite((char*)extstr[0]);
 		if (an->ex) {

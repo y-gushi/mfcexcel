@@ -115,10 +115,11 @@ void DrawEdit::read_xdr_wsDr() {
 
 }
 
-Anchor* DrawEdit::addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl,UINT8* ed) {
+Anchor* DrawEdit::addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl,UINT8* ed,xdr_to* t) {
 	if (!a) {
 		a = (Anchor*)malloc(sizeof(Anchor));
 		a->f = f;
+		a->t = t;
 		a->ex = ex;
 		a->p = pi;
 		a->clientD = cl;
@@ -126,16 +127,16 @@ Anchor* DrawEdit::addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_e
 		a->next = nullptr;
 	}
 	else {
-		a->next = addAnchor(a->next, f, pi, ex, cl,ed);
+		a->next = addAnchor(a->next, f, pi, ex, cl,ed,t);
 	}
 
 	return a;
 }
 
 void DrawEdit::readoneAnchor() {
-	const char* xdrstr[] = { "<xdr:from>","<xdr:pic>","</xdr:twoCellAnchor>","<xdr:ext","<xdr:clientData" };// </xdr:oneCellAnchor> </xdr:twoCellAnchor>
+	const char* xdrstr[] = { "<xdr:from>","<xdr:pic>","</xdr:twoCellAnchor>","<xdr:ext","<xdr:clientData","<xdr:to>" };// </xdr:oneCellAnchor> </xdr:twoCellAnchor>
 	const char* anchoval = "editAs=\"";//8
-	//10 9 20 8 15
+	//10 9 20 8 15 8
 	UINT8 zero[9] = { 0 };
 	UINT8 one[11] = { 0 };
 	UINT8 two[10] = { 0 };
@@ -145,6 +146,7 @@ void DrawEdit::readoneAnchor() {
 
 	xdr_pic* pi = nullptr;
 	xdr_from* fro = nullptr;
+	xdr_to* xto = nullptr;
 	oneCellAnchor_ext *oex= nullptr;
 	UINT8* clientData = nullptr;
 	UINT8* edas = nullptr;
@@ -194,11 +196,15 @@ void DrawEdit::readoneAnchor() {
 		if (res == 0)
 			clientData = read_clientData();
 
+		res = strncmp((char*)fou, xdrstr[5], 8);
+		if (res == 0)
+			xto = read_Xdrto();
+
 		res = strncmp((char*)thr, xdrstr[2], 20);
 
 	} while (res != 0);
 
-	Anroot = addAnchor(Anroot, fro, pi, oex, clientData, edas);
+	Anroot = addAnchor(Anroot, fro, pi, oex, clientData, edas,xto);
 
 }
 
@@ -207,6 +213,7 @@ void DrawEdit::freeAnchor() {
 	while (Anroot) {
 		p = Anroot->next;
 		freefrom(Anroot->f);
+		freeto(Anroot->t);
 		freepic(Anroot->p);
 		freeoneCell(Anroot->ex);
 		free(Anroot->clientD);
@@ -219,6 +226,7 @@ void DrawEdit::freeoneCell(oneCellAnchor_ext* oc) {
 	if (oc) {
 		free(oc->cx);
 		free(oc->cy);
+		free(oc);
 	}
 }
 void DrawEdit::freespPr_a_extLst(spPr_a_extLst* sae) {
@@ -226,6 +234,7 @@ void DrawEdit::freespPr_a_extLst(spPr_a_extLst* sae) {
 		free(sae->a14_hiddenFill_xmlns);
 		free(sae->uri);
 		free(sae->a_srgbClr_val);
+		free(sae);
 	}	
 }
 void DrawEdit::freespPr_exLst(spPr_exLst* se) {
@@ -269,7 +278,18 @@ void DrawEdit::freefrom(xdr_from* f) {
 		free(f->colOff);
 		free(f->row);
 		free(f->rowOff);
+		free(f);
 	}	
+}
+
+void DrawEdit::freeto(xdr_to* f) {
+	if (f) {
+		free(f->col);
+		free(f->colOff);
+		free(f->row);
+		free(f->rowOff);
+		free(f);
+	}
 }
 
 void DrawEdit::freeblipFill(blipFill* bf) {
@@ -358,6 +378,61 @@ xdr_from* DrawEdit::read_Xdrfrom() {
 	fr->rowOff = rowoff;
 
 	return fr;
+}
+
+xdr_to* DrawEdit::read_Xdrto() {
+	const char* xdrstr[] = { "<xdr:col>","<xdr:colOff>","<xdr:row>","<xdr:rowOff>","</xdr:to>" };
+	//9 12 9 12 9
+	UINT8 one[10] = { 0 };
+	UINT8 two[13] = { 0 };
+	UINT8 thr[12] = { 0 };
+
+	UINT8* col = nullptr;
+	UINT8* coff = nullptr;
+	UINT8* row = nullptr;
+	UINT8* rowoff = nullptr;
+
+	xdr_to* to = nullptr;
+	int res = 0;
+
+	do
+	{
+		for (int i = 0; i < 11; i++) {
+			two[i] = two[i + 1];
+			if (i < 8)
+				one[i] = one[i + 1];
+			if (i < 10)
+				thr[i] = thr[i + 1];
+		}
+		one[8] = two[11] = thr[10] = d[p]; p++;
+
+		res = strncmp((char*)one, xdrstr[0], 9);
+		if (res == 0)
+			col = readBetweenTag();
+
+		res = strncmp((char*)two, xdrstr[1], 12);
+		if (res == 0)
+			coff = readBetweenTag();
+
+		res = strncmp((char*)one, xdrstr[2], 9);
+		if (res == 0)
+			row = readBetweenTag();
+
+		res = strncmp((char*)two, xdrstr[3], 12);
+		if (res == 0)
+			rowoff = readBetweenTag();
+
+		res = strncmp((char*)one, xdrstr[4], 9);
+
+	} while (res != 0);
+
+	to = (xdr_to*)malloc(sizeof(xdr_to));
+	to->col = col;
+	to->colOff = coff;
+	to->row = row;
+	to->rowOff = rowoff;
+
+	return to;
 }
 
 oneCellAnchor_ext* DrawEdit::read_xdrext() {

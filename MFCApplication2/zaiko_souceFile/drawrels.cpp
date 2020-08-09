@@ -144,17 +144,18 @@ void DrawEdit::writerels() {
 	char clo = '>';
 	const char* sla = "/>";
 
-	size_t newsiz = rdl;
+	size_t newsiz = rdl+3000;
 	rwd = (UINT8*)malloc(sizeof(UINT8) * newsiz);
 
 	rels_oneStrwrite(relhstr);
 
 	rels_oneStrwrite((UINT8*)relstrs[0]);
 	rels_Doubleqwrite((UINT8*)relstrs[1], relsxmlns);
-	rwd[wl] = clo; wl++;
+	rwd[rwl] = clo; rwl++;
 
 	drawRels* sr = relroot;
 	while (sr) {
+
 		rels_oneStrwrite((UINT8*)relstrs[2]);
 		rels_Doubleqwrite((UINT8*)relstrs[3], sr->id);
 		rels_Doubleqwrite((UINT8*)relstrs[4], sr->Type);
@@ -201,11 +202,11 @@ void DrawEdit::rels_Doubleqwrite(UINT8* str, UINT8* v) {
 
 	while (v[i] != '\0') {
 		rwd[rwl] = v[i];
-		i++; wl++;
+		i++; rwl++;
 	}
 
 	rwd[rwl] = d;
-	wl++;
+	rwl++;
 }
 
 //tagèëÇ´çûÇ›
@@ -216,6 +217,6 @@ void DrawEdit::rels_oneStrwrite(UINT8* str) {
 	while (str[i] != '\0') {
 		rwd[rwl] = str[i];
 		i++;
-		wl++;
+		rwl++;
 	}
 }
