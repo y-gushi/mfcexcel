@@ -348,7 +348,7 @@ char* CMFCApplication2Dlg::GetResouceTwo() {
 	LPVOID p;
 	char* cs;
 
-	hrc = FindResourceA(NULL, MAKEINTRESOURCEA(IDR_TEXT3), "TEXT");
+	hrc = FindResourceA(NULL, MAKEINTRESOURCEA(IDR_TEXT4), "TEXT");
 
 	hgb = LoadResource(NULL, hrc);
 	p = LockResource(hgb);
@@ -380,7 +380,7 @@ char* CMFCApplication2Dlg::GetResouceFour() {
 	LPVOID p;
 	char* cs;
 
-	hrc = FindResourceA(NULL, MAKEINTRESOURCEA(IDR_TEXT4), "TEXT");
+	hrc = FindResourceA(NULL, MAKEINTRESOURCEA(IDR_TEXT3), "TEXT");
 
 	hgb = LoadResource(NULL, hrc);
 	p = LockResource(hgb);

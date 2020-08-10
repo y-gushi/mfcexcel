@@ -143,27 +143,32 @@ void DrawEdit::writerels() {
 	const char* relstrs[] = { "<Relationships"," xmlns=\"","<Relationship"," Id=\""," Target=\""," Type=\"","</Relationships>" };
 	char clo = '>';
 	const char* sla = "/>";
+	const char* ent = "\r\n";
 
 	size_t newsiz = rdl+3000;
 	rwd = (UINT8*)malloc(sizeof(UINT8) * newsiz);
 
 	rels_oneStrwrite(relhstr);
+	rels_oneStrwrite((UINT8*)ent);
 
 	rels_oneStrwrite((UINT8*)relstrs[0]);
 	rels_Doubleqwrite((UINT8*)relstrs[1], relsxmlns);
 	rwd[rwl] = clo; rwl++;
 
 	drawRels* sr = relroot;
+
 	while (sr) {
 
 		rels_oneStrwrite((UINT8*)relstrs[2]);
 		rels_Doubleqwrite((UINT8*)relstrs[3], sr->id);
-		rels_Doubleqwrite((UINT8*)relstrs[4], sr->Type);
-		rels_Doubleqwrite((UINT8*)relstrs[5], sr->target);
+		rels_Doubleqwrite((UINT8*)relstrs[5], sr->Type);
+		rels_Doubleqwrite((UINT8*)relstrs[4], sr->target);
 		rels_oneStrwrite((UINT8*)sla);
+
 		sr = sr->next;
 	}
 	rels_oneStrwrite((UINT8*)relstrs[6]);
+
 }
 
 UINT8* DrawEdit::getrelvalue() {

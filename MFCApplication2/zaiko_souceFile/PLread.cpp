@@ -845,6 +845,7 @@ void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,U
 	
 	datlen = strlen((char*)dreldata);
 	dr->readdrawrels(dreldata, datlen);
+
 	dr->writerels();
 
 	UINT8 drel[] = "xl/drawings/_rels/drawing";
