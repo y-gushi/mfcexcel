@@ -27,15 +27,17 @@ void Ctags::addcelldata(UINT32 row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         strcpy_s((char*)spanEn, spsiz, (char*)charcn);
         free(charcn);
 
-        UINT8 HT[] = "29.25";
-        UINT8* hT = (UINT8*)malloc(6);
-        strcpy_s((char*)hT, 6, (const char*)HT);
+        //UINT8 HT[] = "29.25";
+        //UINT8* hT = (UINT8*)malloc(6);
+        //strcpy_s((char*)hT, 6, (const char*)HT);
+        UINT8* hT = nullptr;
         UINT8* thick = nullptr;
         UINT8* rs = nullptr;
         UINT8* CF = nullptr;
-        UINT8 CH[] = "1";//customhigh
-        UINT8* cH = (UINT8*)malloc(2);
-        strcpy_s((char*)cH, 2, (const char*)CH);
+        //UINT8 CH[] = "1";//customhigh
+        //UINT8* cH = (UINT8*)malloc(2);
+        //strcpy_s((char*)cH, 2, (const char*)CH);
+        UINT8* cH = nullptr;
         C* newC = nullptr;
 
         rows = addrows(rows, row, spanSt, spanEn, hT, thick, rs, CF, cH, newC);

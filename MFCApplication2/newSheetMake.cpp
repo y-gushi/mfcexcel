@@ -1,7 +1,7 @@
 #include "zaiko_souceFile/RowColumn.h"
 
 // <row r="12" spans="1:2" ht="52.9" customHeight="1">
-UINT8* Ctags::newSheet(UINT8* rid, UINT8* uuid,CsvItemandRid* citem,UINT8* styleone,UINT8* styletwo) {
+UINT8* Ctags::newSheet(UINT8* rid, UINT8* uuid,CsvItemandRid* citem,UINT8* styleone,UINT8* styletwo,UINT8* instr) {
 	UINT32 itemnumrow = 11;
 	UINT8 scellcol[] = "A";
 	UINT8 stockvalue[] = "F";//F列から
@@ -22,6 +22,21 @@ UINT8* Ctags::newSheet(UINT8* rid, UINT8* uuid,CsvItemandRid* citem,UINT8* style
 	addcelldata(itemnumrow, scellcol, tval, sv, val, nullptr, nullptr);
 
 	itemnumrow++;//次の行へ
+
+	//日付文字　追加
+	UINT8* Ftval = (UINT8*)malloc(sizeof(UINT8) * 2);
+	strcpy_s((char*)Ftval, 2, (char*)tv);
+
+	ssiz = strlen((char*)styleone) + 1;
+	UINT8* Fsv = (UINT8*)malloc(sizeof(UINT8) * ssiz);
+	strcpy_s((char*)Fsv, ssiz, (char*)styleone);
+
+	ssiz = strlen((char*)instr) + 1;
+	UINT8* Fval = (UINT8*)malloc(sizeof(UINT8) * ssiz);
+	strcpy_s((char*)Fval, ssiz, (char*)instr);
+
+	addcelldata(itemnumrow, stockvalue, Ftval, Fsv, Fval, nullptr, nullptr);
+	
 	itemnumrow++;//次の行へ
 
 	itemColors* cl = citem->c;

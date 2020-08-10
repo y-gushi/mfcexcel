@@ -614,6 +614,7 @@ char* PLRead::sheetread(char* hfn, CsvItemandRid* it,FILE* inf,UINT8* styo,UINT8
 	char workbrel[] = "xl/_rels/workbook.xml.rels";
 	char workb[] = "xl/workbook.xml";
 	char appfile[] = "docProps/app.xml";
+	char contenstr[] = "[Content_Types].xml";//[Content_Types].xml
 	bool t = false;
 
 	Ctags* mh;//発注到着　cell データ読み込み
@@ -680,13 +681,15 @@ char* PLRead::sheetread(char* hfn, CsvItemandRid* it,FILE* inf,UINT8* styo,UINT8
 						if (!flag) {
 							flag = hr->searchChara((char*)appfile, hr->scd->filename, hr->scd->filenameleng);
 							if (!flag) {
+								flag = hr->searchChara((char*)contenstr, hr->scd->filename, hr->scd->filenameleng);
+								if (!flag) {
+									//cddata一旦書き込み
+									UINT32 LHposstock = zip->writeposition;//ローカルヘッダーの位置更新用
+									zip->LoclheadAndDatacopy(cddata->localheader, inf, &Zr);//ローカルヘッダー検索＆書き込み
+									cddata->localheader = LHposstock;//ローカルヘッダー相対位置のみ変更
 
-								//cddata一旦書き込み
-								UINT32 LHposstock = zip->writeposition;//ローカルヘッダーの位置更新用
-								zip->LoclheadAndDatacopy(cddata->localheader, inf, &Zr);//ローカルヘッダー検索＆書き込み
-								cddata->localheader = LHposstock;//ローカルヘッダー相対位置のみ変更
-
-								writeCentral(cddata);
+									writeCentral(cddata);
+								}
 							}
 						}						
 					}
@@ -729,7 +732,7 @@ UINT8* PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8*
 
 	Ctags* mh = new Ctags(d, datlen, shar);//シートデータ読み込み
 	mh->sheetread();
-	mh->newSheet(nullptr, uuid, citem, styleone, styletwo);
+	mh->newSheet(nullptr, uuid, citem, styleone, styletwo, sharestr);
 
 	mh->writesheetdata();
 
@@ -862,6 +865,8 @@ int PLRead::makecontentType(char* fn, CsvItemandRid* r,FILE* wf) {
 
 	delete dec;
 	delete ce;
+
+	return 1;
 }
 
 void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,UINT8* dreldata,UINT8* uid) {

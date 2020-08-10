@@ -215,5 +215,5 @@ public:
     void insertcols(cols* bc, cols* nc, UINT32 mi, UINT32 ma);
     void colspushlast(cols* n);
 
-    UINT8* newSheet(UINT8* rid, UINT8* uuid, CsvItemandRid* citem, UINT8* styleone, UINT8* styletwo);
+    UINT8* newSheet(UINT8* rid, UINT8* uuid, CsvItemandRid* citem, UINT8* styleone, UINT8* styletwo, UINT8* instr);
 };
