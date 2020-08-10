@@ -105,6 +105,7 @@ void shareRandD::getSicount() {
             UINT32 powsize = UINT32(po);
             sicount += (getcount[i] - 48) * powsize;
         }
+
         free(getcount);
     }
 

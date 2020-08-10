@@ -88,15 +88,15 @@ void DrawEdit::drawWrite() {
 
 			oneStrwrite((char*)tostr[1]);
 		}
-
-		oneStrwrite((char*)extstr[0]);
+		
 		if (an->ex) {
+			oneStrwrite((char*)extstr[0]);
 			if (an->ex->cx)
 				oneStrplusDoubleq((char*)extstr[1], an->ex->cx);
 			if (an->ex->cy)
 				oneStrplusDoubleq((char*)extstr[2], an->ex->cy);
+			oneStrwrite((char*)sla);
 		}		
-		oneStrwrite((char*)sla);
 
 		//----pic
 		oneStrwrite((char*)picstr[0]);
@@ -184,22 +184,24 @@ void DrawEdit::drawWrite() {
 		oneStrwrite((char*)blipstr[11]);
 		oneStrwrite((char*)blipstr[12]);
 
-		//srcrect ないやつある
-		oneStrwrite((char*)srcstr[0]);
-		if(an->p->b->srcRect)
+		//srcrect ないやつある		
+		if (an->p->b->srcRect) {
+			oneStrwrite((char*)srcstr[0]);
 			oneStrwrite((char*)an->p->b->srcRect);//tag 不明
-		else
 			oneStrwrite((char*)sla);
+		}			
 		//stretch
-		oneStrwrite((char*)srcstr[1]);
-		oneStrwrite((char*)srcstr[2]);
-		if (an->p->b->strtch)
-			oneStrwrite((char*)an->p->b->srcRect);//tag 不明
-		else
-			oneStrwrite((char*)sla);
-		oneStrwrite((char*)srcstr[3]);
+		if (an->p->b->strtch) {
+			oneStrwrite((char*)srcstr[1]);
+			oneStrwrite((char*)srcstr[2]);
+			if (an->p->b->strtch)
+				oneStrwrite((char*)an->p->b->srcRect);//tag 不明
+			else
+				oneStrwrite((char*)sla);
+			oneStrwrite((char*)srcstr[3]);
+		}		
 
-		oneStrwrite((char*)srcstr[4]);
+		oneStrwrite((char*)srcstr[4]);// /xdr:blipFill
 
 		//----spPr 書き込み
 		oneStrwrite((char*)spPrstr[0]);
@@ -240,13 +242,13 @@ void DrawEdit::drawWrite() {
 			oneStrwrite((char*)pestgeostr[3]);
 		}
 		
-		//noFill
-		oneStrwrite((char*)pestgeostr[4]);
+		//noFill		
 		if (an->p->s->noFill) {
 			//tag 不明
-		}
-		else {
+			oneStrwrite((char*)pestgeostr[4]);
 			oneStrwrite((char*)sla);
+		}
+		else {			
 		}
 
 		//a:extLst
