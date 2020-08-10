@@ -70,7 +70,7 @@ UINT8* Ctags::newSheet(UINT8* rid, UINT8* uuid,CsvItemandRid* citem,UINT8* style
 	for (i; i < strlen((char*)uuid); i++) {
 		newuuid[i] = uuid[i - 1];
 	}
-	newuuid[i] = '{'; i++;
+	newuuid[i] = '}'; i++;
 	newuuid[i] = '\0';
 
 	free(wsV->uid);

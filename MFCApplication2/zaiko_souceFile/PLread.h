@@ -13,6 +13,7 @@
 #include "AppFile.h"
 #include "workbook_rel_edi.h"
 #include "draw_edit.h"
+#include "Content_Type_edit.h"
 
 #define BUFSIZE 255
 
@@ -166,6 +167,8 @@ public:
 
 	// new sheet make
 	UINT8* newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8* styleone, UINT8* styletwo, FILE* wf, char* ifn, UINT8* reld);
+
+	int makecontentType(char* fn, CsvItemandRid* r, FILE* wf);
 
 	void makedrawxml(UINT8* drawdata, UINT8* rid, UINT8* targetfile, FILE* f, UINT8* dreldata, UINT8* uid);
 

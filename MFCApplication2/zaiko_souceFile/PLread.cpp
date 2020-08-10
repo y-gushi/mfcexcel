@@ -799,13 +799,78 @@ UINT8* PLRead::newSheetWrite(UINT8* d, UINT8* uuid, CsvItemandRid* citem, UINT8*
 
 	return nullptr;
 }
+//content type 追加
+int PLRead::makecontentType(char* fn, CsvItemandRid* r,FILE* wf) {
+	// <Override PartName="/xl/worksheets/sheet425.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+	// <Override PartName="/xl/drawings/drawing425.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>
+	UINT8 partsh[] = "/xl/worksheets/sheet";
+	UINT8 ftype[] = ".xml";
+	UINT8 typesh[] = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
+
+	UINT8 partdr[] = "/xl/drawings/drawing";
+	UINT8 typedr[] = "application/vnd.openxmlformats-officedocument.drawing+xml";
+
+	char contentstr[] = "[Content_Types].xml";
+
+	std::ifstream Zr(fn, std::ios::in | std::ios::binary);
+	if (!Zr)
+		return 0;
+
+	cddata = nullptr;//セントラルディレクトのデータ
+	hr = new HeaderRead(fn);
+	hr->endread(&Zr);//終端コードの読み込み
+	DeflateDecode* dec = new DeflateDecode(&Zr);
+	bool flag = false;
+
+	while (hr->filenum < hr->ER->centralsum) {
+		cddata = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralnum, nullptr, &Zr);
+		flag = hr->searchChara(contentstr, hr->scd->filename, hr->scd->filenameleng);
+		if (flag)
+			break;
+		hr->freeheader();
+	}
+	if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
+		hr->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
+		dec->dataread(hr->LH->pos, cddata->nonsize);
+		hr->freeLH();
+	}
+	contentEdit* ce = new contentEdit(dec->ReadV, dec->readlen);
+	ce->contentread();
+
+	CsvItemandRid* p = r;
+	while (p) {
+		char* newsh = filenamemerge(partsh, p->rid, ftype);
+		char* newdr = filenamemerge(partdr, p->rid, ftype);
+
+		UINT8* shnewty = (UINT8*)calloc(74, sizeof(UINT8));
+		strcpy_s((char*)shnewty, 74, (char*)typesh);
+
+		UINT8* drnewty = (UINT8*)calloc(58, sizeof(UINT8));
+		strcpy_s((char*)drnewty, 58, (char*)typedr);
+
+		ce->oroot = ce->addove(ce->oroot, (UINT8*)newsh, shnewty, 0);
+		ce->oroot = ce->addove(ce->oroot, (UINT8*)newdr, drnewty, 0);
+
+		p = p->next;
+	}
+
+	ce->contentwrite();
+
+	writecompress(ce->wd, ce->wl, wf, cddata);
+
+	hr->freeheader();
+
+	delete dec;
+	delete ce;
+}
 
 void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,UINT8* dreldata,UINT8* uid) {
 	size_t datlen = strlen((char*)drawdata);
 
 	dr = new DrawEdit(drawdata, datlen);
 	dr->readdraw();
-	free(dr->Anroot->p->p->Pr->exLst->a16->id);
+	/*
+	* free(dr->Anroot->p->p->Pr->exLst->a16->id);
 
 	size_t nidlen = strlen((char*)uid) + 3;
 	UINT8* nid = (UINT8*)malloc(sizeof(UINT8) * nidlen);
@@ -818,6 +883,7 @@ void PLRead::makedrawxml(UINT8* drawdata, UINT8* rid,UINT8* targetfile,FILE* f,U
 	nid[nidlen] = '\0';
 
 	dr->Anroot->p->p->Pr->exLst->a16->id = nid;
+	*/	
 	dr->drawWrite();
 
 	UINT8 drn[] = "xl/drawings/drawing";

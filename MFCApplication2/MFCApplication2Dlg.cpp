@@ -228,6 +228,8 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 		delete pl;
 		return;
 	}
+	//contentType　追加
+	pl->makecontentType(hatyu, pl->nomatch, wf);
 
 	//スタイル決定
 	pl->openstyleseat(hatyu);
@@ -310,8 +312,6 @@ void CMFCApplication2Dlg::OnBnClickedButton1()
 	//app workbook 書き込み
 	delete pl->wb;
 	delete pl->ap;
-
-	//content_type 更新
 
 	pl->endrecordwrite(wf);
 
