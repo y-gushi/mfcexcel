@@ -54,7 +54,7 @@ void shareRandD::getSicount() {
             int result = strcmp((const char*)searchcount, (const char*)count);
             if (result == 0)
             {
-                siunique_place = 0;
+                sicount_place = 0;
                 while (sd[datapos + sicount_place] != '"') {
                     sicount_place++;
                 }
@@ -65,6 +65,8 @@ void shareRandD::getSicount() {
                         getcount[i] = sd[datapos];
                         datapos++;
                     }
+                    getcount[sicount_place] = '\0';
+
                 }
                 break;
             }
@@ -101,8 +103,9 @@ void shareRandD::getSicount() {
 
     if (getcount) {
         for (int i = 0; i < sicount_place; i++) {//share count”@”Žš‚É•ÏŠ·
-            double po = pow(10, siunique_place - i - 1);
+            double po = pow(10, sicount_place - i - 1);
             UINT32 powsize = UINT32(po);
+
             sicount += (getcount[i] - 48) * powsize;
         }
 
@@ -166,6 +169,7 @@ UINT8* shareRandD::addsistr(UINT8* sistr) {
     sis = resis;//Œ³‚ÌŽQÆ•ÏX
 
     siunique++;
+    //sicount++;
 
     return nullptr;
 }
