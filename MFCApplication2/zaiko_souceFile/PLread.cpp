@@ -270,6 +270,7 @@ void PLRead::workbookCheck(CsvItemandRid* citem) {
 	CsvItemandRid* roo = citem;
 	int res = 0;
 	UINT32 i = 0;
+
 	while (roo) {
 		i = 0;
 		while (i < shsize) {
@@ -295,19 +296,22 @@ void PLRead::workbookCheck(CsvItemandRid* citem) {
 
 	//external rid 変更
 	extReferences* er = wb->exRroot;
-	UINT32 ernum = shsize+1;
+	UINT32 exidnum = shsize + 1;
 	int pl = 0;
 	if (er) {
 		while (er) {
-			UINT8* exrid = numchange.InttoChar(ernum, &pl);
+			UINT8* exrid = numchange.InttoChar(exidnum, &pl);
 			//rid更新
 			free(er->id);
 			er->id = exrid;
-			ernum++;
+			exidnum++;
 
 			er = er->next;
 		}
 	}
+	//active tab 変更
+	//free(wb->wVroot->activeTab);
+	//wb->wVroot->activeTab= numchange.InttoChar(shsize, &pl);
 
 	//ソート	
 }

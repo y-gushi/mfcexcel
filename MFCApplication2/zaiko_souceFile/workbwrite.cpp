@@ -20,11 +20,14 @@ void WorkBook_edi::writeworkbook() {
 	const char* laststr = "</workbook>";
 	char clo = '>';
 	char sla[] = "/>";
+	const char* ent = "\r\n";
 
 	size_t siz = dl + 2000;
 	wd = (UINT8*)malloc(siz);
 
 	oneStrwrite((char*)titlestr);
+	oneStrwrite((char*)ent);
+
 	oneStrwrite((char*)headstr[0]);
 
 	if (wbroot->xmlns)

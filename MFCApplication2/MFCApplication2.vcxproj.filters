@@ -42,9 +42,6 @@
     <ClInclude Include="zaiko_souceFile\ChangeArrayNumber.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="zaiko_souceFile\CheckStyle.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="zaiko_souceFile\compressdata.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

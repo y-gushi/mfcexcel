@@ -418,6 +418,7 @@ void Ctags::xmlheaderRead() {
 
     UINT8 wo[11] = { 0 };
     int result = 1;
+    size_t le = 0;
 
     while (result != 0) {
         for (int i = 0; i < 9; i++) {

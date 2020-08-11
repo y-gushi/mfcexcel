@@ -201,7 +201,6 @@
     <ClInclude Include="zaiko_souceFile\AppFile.h" />
     <ClInclude Include="zaiko_souceFile\bitInOut.h" />
     <ClInclude Include="zaiko_souceFile\ChangeArrayNumber.h" />
-    <ClInclude Include="zaiko_souceFile\CheckStyle.h" />
     <ClInclude Include="zaiko_souceFile\compressdata.h" />
     <ClInclude Include="zaiko_souceFile\Content_Type_edit.h" />
     <ClInclude Include="zaiko_souceFile\CRC.h" />

@@ -74,14 +74,16 @@ void workb_rels::readwbrels()
 
 void workb_rels::writewbrel() {
 	const char* heads[] = { "<Relationships"," xmlns=\"" };
-	const char* relstr[] = { "<Relationship"," Id=\"rid"," Type=\""," Target=\"","</Relationships>" };
+	const char* relstr[] = { "<Relationship"," Id=\"rId"," Type=\""," Target=\"","</Relationships>" };
 	char clo = '>';
 	char sla[] = "/>";
+	const char* ent = "\r\n";
 
 	size_t siz = dl + 2000;
 	wd= (UINT8*)malloc(sizeof(UINT8)*siz);
 
 	oneStrwrite((char*)tstr);
+	oneStrwrite((char*)ent);
 
 	oneStrwrite((char*)heads[0]);
 	oneStrplusDoubleq((char*)heads[1], xmlns);

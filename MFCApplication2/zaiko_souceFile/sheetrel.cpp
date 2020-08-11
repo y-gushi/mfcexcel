@@ -146,11 +146,13 @@ void Ctags::writerels() {
 	const char* relstrs[] = { "<Relationships"," xmlns=\"","<Relationship"," Id=\""," Target=\"","</Relationships>"," Type=\"" };
 	char clo = '>';
 	const char* sla = "/>";
+	const char* ent = "\r\n";
 
 	size_t newsiz = rdl+3000;
 	rwd = (UINT8*)malloc(sizeof(UINT8) * newsiz);
 
 	rels_oneStrwrite(relhstr);
+	rels_oneStrwrite((UINT8*)ent);
 
 	rels_oneStrwrite((UINT8*)relstrs[0]);
 	rels_Doubleqwrite((UINT8*)relstrs[1], relsxmlns);

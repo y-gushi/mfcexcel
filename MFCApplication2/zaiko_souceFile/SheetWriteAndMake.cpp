@@ -96,11 +96,15 @@ void Ctags::writesheetdata() {
 }
 
 UINT8* Ctags::writeheadpart() {
+    UINT8 headstr[] = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n";
     const char* workstat[] = { "<worksheet"," xmlns=\"" ," xmlns:r=\"" ," xmlns:mc=\"" ," xmlns:x14ac=\"" ,
         " xmlns:xr=\"" ," xmlns:xr2=\"" ," xmlns:xr3=\"" ," mc:Ignorable=\""," xr:uid=\"" };
     const char* shpr[] = { "<sheetPr","<tabColor"," rgb=\""," tint=\"","<pageSetUpPr"," fitToPage=\"","</sheetPr>"," filterMode=\""," theme=\"","transitionEvaluation=\"" };
     UINT8 clo = '>';
     UINT8 sla[] = "/>";
+    UINT8 ent[] = "\r\n";
+
+    oneStrwrite(headstr);
 
     if (!wsV)
         return nullptr;
