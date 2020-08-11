@@ -5,6 +5,7 @@ void shareRandD::siwrite() {
 	char sicoun[] = " count=\"";
 	char uniq[] = " uniqueCount=\"";
 	char endshar[] = "</sst>";
+	UINT8 headstr[] = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n";
 
 	UINT32 datalen = UINT32(sdlen) + 10000;//データ長
 
@@ -26,6 +27,8 @@ void shareRandD::siwrite() {
 	size_t tcou = 0;
 	size_t rprcount = 0;
 	bool tflag = false;
+
+	oneStrwrite((char*)headstr);
 	//ヘッダー書き込み
 	oneStrwrite(header);
 	//カウント数書き込み

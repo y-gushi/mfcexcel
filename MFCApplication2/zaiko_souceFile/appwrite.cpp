@@ -3,7 +3,7 @@
 void App_File::writeappfile() {
 	size_t siz = dl+2000;
 	wd = (UINT8*)malloc(siz);
-
+	UINT8 titlestr[] = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n";
 	const char* headstr[] = { "<Properties"," xmlns=\""," xmlns:vt=\"" };
 	const char* headtwo[] = { "<Application","</Application>" ,"<DocSecurity","</DocSecurity>","<ScaleCrop","</ScaleCrop>" };
 	const char* headinpair[] = { "<HeadingPairs","<vt:vector"," size=\""," baseType=\"","</HeadingPairs>","</vt:vector>" };
@@ -13,6 +13,8 @@ void App_File::writeappfile() {
 	"<AppVersion","</AppVersion>","</Properties>" };
 	char clo = '>';
 	const char* sla = "/>";
+
+	oneStrwrite((char*)titlestr);
 
 	oneStrwrite((char*)headstr[0]);
 	oneStrplusDoubleq((char*)headstr[1], prope_xmlns);
