@@ -14,6 +14,7 @@ UINT32 ArrayNumber::RowArraytoNum(UINT8* row, int rowpl) {
 //s”int‚ð”z—ñ‚É
 UINT8* ArrayNumber::InttoChar(UINT32 num, int* pl)
 {
+    UINT32 six_place = 0;//–œ‚ÌˆÊ
     UINT32 five_place = 0;//–œ‚ÌˆÊ
     UINT32 four_place = 0;//ç‚ÌˆÊ
     UINT32 three_place = 0;//•S‚ÌˆÊ
@@ -22,7 +23,43 @@ UINT8* ArrayNumber::InttoChar(UINT32 num, int* pl)
 
     UINT8* index = nullptr;
 
-    if (num / 10000 > 0) {
+    if (num / 100000 > 0) {
+        index = (UINT8*)malloc(7);
+        if (index) {
+            six_place = num / 100000;
+            index[0] = six_place + '0';
+
+            five_place = num % 100000;
+            five_place = five_place / 10000;
+            index[1] = five_place + '0';
+
+            //four_place = num % 100000;
+            four_place = num % 10000;
+            four_place = four_place / 1000;
+            index[2] = four_place + '0';
+
+            //three_place = num % 100000;
+            three_place = num % 1000;
+            three_place = three_place / 100;
+            index[3] = three_place + '0';
+
+            //two_place = num % 10000;
+            //two_place = two_place % 1000;
+            two_place = num % 100;
+            two_place = two_place / 10;
+            index[4] = two_place + '0';
+
+            //one_place = num % 10000;
+            //one_place = one_place % 1000;
+            //one_place = one_place % 100;
+            one_place = num % 10;
+            index[5] = one_place + '0';
+
+            index[6] = '\0';
+            *pl = 6;
+        }
+    }
+    else if (num / 10000 > 0) {
         index = (UINT8*)malloc(6);
         if (index) {
             five_place = num / 10000;
@@ -32,21 +69,15 @@ UINT8* ArrayNumber::InttoChar(UINT32 num, int* pl)
             four_place = four_place / 1000;
             index[1] = four_place + '0';
 
-            three_place = num % 10000;
-            three_place = three_place % 1000;
+            three_place = num % 1000;
             three_place = three_place / 100;
             index[2] = three_place + '0';
 
-            two_place = num % 10000;
-            two_place = two_place % 1000;
-            two_place = two_place % 100;
+            two_place = num % 100;
             two_place = two_place / 10;
             index[3] = two_place + '0';
 
-            one_place = num % 10000;
-            one_place = one_place % 1000;
-            one_place = one_place % 100;
-            one_place = one_place % 10;
+            one_place = num % 10;
             index[4] = one_place + '0';
 
             index[5] = '\0';

@@ -400,6 +400,7 @@ void Ctags::getCtag() {
 
     //t=s si in
     if (Tv) {
+
         if (Tv[0] == 's' && tlen == 1)
             Vsi = getSi(Vv, vlen);//si in
     }

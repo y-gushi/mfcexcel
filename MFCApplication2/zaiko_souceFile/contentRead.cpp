@@ -31,11 +31,13 @@ void contentEdit::contentwrite() {
 	const char* laststr = "</Types>";
 	char clo = '>';
 	char sla[] = "/>";
+	const char* ent = "\r\n";
 
 	size_t siz = dl + 1000;
 	wd = (UINT8*)malloc(siz);
 
 	oneStrwrite((char*)titstr);
+	oneStrwrite((char*)ent);
 
 	oneStrwrite((char*)topstr[0]);
 	oneStrplusDoubleq((char*)topstr[1], xmlns);

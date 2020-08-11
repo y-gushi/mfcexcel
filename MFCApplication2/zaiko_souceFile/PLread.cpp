@@ -148,7 +148,7 @@ int PLRead::readWorkBook(char* fn) {
 	}
 	ap=new App_File(dec->ReadV, dec->readlen);
 	ap->readappfile();
-	shsize = ap->Title_lp_size;
+	shsize = ap->tabsize;
 
 	//セントラルヘッダーコピー
 	cddataap=copycd(cddata);
@@ -290,6 +290,12 @@ void PLRead::workbookCheck(CsvItemandRid* citem) {
 
 			shsize=wb->addsheets(roo->it, im, ri);//workbook 配列最後尾追加
 			ap->addvector_lpstr(roo->it);//app.xml　配列最後尾追加
+			//app size vt:i4 変更
+			free(ap->HeadRoot->vt_i4);
+			ap->HeadRoot->vt_i4 = numchange.InttoChar(shsize, &pl);
+			free(ap->Tvector_size);
+			ap->Tvector_size = numchange.InttoChar(shsize, &pl);
+
 		}
 		roo = roo->next;
 	}
@@ -309,6 +315,7 @@ void PLRead::workbookCheck(CsvItemandRid* citem) {
 			er = er->next;
 		}
 	}
+
 	//active tab 変更
 	//free(wb->wVroot->activeTab);
 	//wb->wVroot->activeTab= numchange.InttoChar(shsize, &pl);

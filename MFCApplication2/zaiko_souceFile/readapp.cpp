@@ -11,6 +11,7 @@ App_File::App_File(UINT8* rdata, UINT32 datalen)
 	p = 0;
 	stocklen = 0;
 	Title_lp_size = 0;
+	tabsize = 0;
 
 	prope_xmlns = nullptr;
 	prope_vt = nullptr;
@@ -362,6 +363,8 @@ UINT8* App_File::readHeadPair() {
 	HeadRoot->baseT = vals[1];
 	HeadRoot->vt_lpstr = lp;
 	HeadRoot->vt_i4 = ifo;
+
+	tabsize= chnum.RowArraytoNum(ifo, strlen((char*)ifo));
 
 	return nullptr;
 }

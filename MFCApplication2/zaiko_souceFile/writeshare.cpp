@@ -34,6 +34,7 @@ void shareRandD::siwrite() {
 	//カウント数書き込み
 	int pl = 0;
 	UINT8* sic = st.InttoChar(sicount, &pl);
+
 	oneStrplusDoubleq(sicoun, sic);
 	free(sic);
 	//ユニーク数書き込み

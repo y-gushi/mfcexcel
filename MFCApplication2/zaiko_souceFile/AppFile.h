@@ -41,6 +41,7 @@ public:
 	UINT8* Tvector_size;
 	UINT8* Tvector_baseT;
 	UINT32 Title_lp_size;
+	UINT32 tabsize;
 
 	HeadingPair* HeadRoot;
 

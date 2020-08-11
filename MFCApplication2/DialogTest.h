@@ -28,7 +28,7 @@ public:
 	cellxfs* cx;
 	stylexf* sx;
 	numFMts* nf;
-	UINT8 nid[4] = "180";
+	UINT8 nid[4] = "180";//187
 
 	Fonts* fs;
 	Fills* fis;

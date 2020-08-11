@@ -169,7 +169,7 @@ UINT8* shareRandD::addsistr(UINT8* sistr) {
     sis = resis;//Œ³‚ÌQÆ•ÏX
 
     siunique++;
-    //sicount++;
+    sicount++;
 
     return nullptr;
 }
@@ -410,7 +410,9 @@ void shareRandD::ReadShare() {
             }
         }
         //std::cout << "•¶š” : " << sicount << std::endl;
+
     }
+
 }
 
 Si* shareRandD::getSi(Si* h) {

@@ -105,6 +105,7 @@ UINT8* Ctags::writeheadpart() {
     UINT8 ent[] = "\r\n";
 
     oneStrwrite(headstr);
+    oneStrwrite(ent);
 
     if (!wsV)
         return nullptr;
