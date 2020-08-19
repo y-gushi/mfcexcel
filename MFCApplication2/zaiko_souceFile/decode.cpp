@@ -567,9 +567,6 @@ UINT64 DeflateDecode::dataread(UINT64 position, UINT32 size) {
 
         } while (BFINAL != 1);
 
-
-
-
         ReadV = ReadVroot;
 
         UINT64 po = fr->tellg();

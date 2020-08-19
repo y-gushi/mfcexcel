@@ -1944,6 +1944,7 @@ void Ctags::freemarge() {
         p = margeCellRoot->next;
         free(margeCellRoot->scell);
         free(margeCellRoot->ecell);
+        free(margeCellRoot);
         margeCellRoot = p;
     }
 }
